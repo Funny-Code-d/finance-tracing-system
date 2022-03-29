@@ -1,10 +1,11 @@
 from .base import BaseRepository
-
+from models.token import TokenIn
 
 class TokenRepository(BaseRepository):
     
-    async def create_token(self, ):
+    async def create_token(self, u: TokenIn):
         """Создание токена для нового пользователя"""
+        
         
     async def refresh_token(self):
         """Создание нового токена для существующего пользователя"""
@@ -17,4 +18,9 @@ class TokenRepository(BaseRepository):
     
     async def delete_token(self):
         """Удаление токена"""
-        
+    
+    
+    
+    
+    async def generate_token() -> str:
+        return 'generationg token'

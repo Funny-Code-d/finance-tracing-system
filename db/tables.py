@@ -1,5 +1,3 @@
-from enum import unique
-# from typing import Sequence
 from sqlalchemy.schema import Sequence
 from sqlalchemy import CheckConstraint, ForeignKey
 import sqlalchemy

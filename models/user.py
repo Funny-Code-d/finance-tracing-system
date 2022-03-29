@@ -9,8 +9,14 @@ class User(BaseModel):
     email: EmailStr
     telegram_id: int
     
-class UserIn(BaseModel):
+class UserRegistartion(BaseModel):
     first_name: str
     last_name: str
     email: Optional[EmailStr]
     telegram_id: Optional[int]
+    
+class UserIn(BaseModel):
+    user_id: Optional[int]
+    email: Optional[EmailStr]
+    telegram_id: Optional[int]
+    
