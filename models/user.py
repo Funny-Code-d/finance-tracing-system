@@ -4,6 +4,7 @@ from typing import Optional
 
 class User(BaseModel):
     user_id: Optional[int]
+    token_id: int
     first_name: str
     last_name: str
     email: EmailStr
