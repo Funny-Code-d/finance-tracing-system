@@ -25,3 +25,4 @@
     - docker
 * Сайт
     - React
+    - Node JS
