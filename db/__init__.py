@@ -1,8 +1,6 @@
-from .token import token_table
-from .customer import customers
-from .debtbook import debt_person, debtbook_table, debtbook_history
-from .private_cost import personal_group, personal_category, personal_purchase, detail_personal_purchase, personal_temlates, personal_templates_category
-from .public_cost import public_group, public_group_users, public_category, public_purchase, detail_public_purchase, public_templates, public_templates_category
+from .hubs import hub_token, hub_customer, hub_group, hub_todo_list, hub_category, hub_templates, hub_purchase, hub_debtor, hun_debtbook
+from .settelites import set_token, set_customer, set_group, set_debtor, set_debtbook_history, set_item_todo_list, set_purchase, set_purchase_detail
+from .links import link_token_customer, link_customer_debtor, link_debtor_debtbook, link_admin_group, link_pull_group, link_group_todo_list, link_templates_group, link_group_category, link_templates_category, link_purchase_category, link_purcahse_group
 
 from .base import metadata, engine
 

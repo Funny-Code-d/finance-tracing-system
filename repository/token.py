@@ -73,9 +73,8 @@ class TokenRepository(BaseRepository):
         
         for item in responce_db:
             parse_obj = Token.parse_obj(item)
-            print(parse_obj.access_token, access_token, end='\n')
             if security.verify_hash_token(access_token, parse_obj.access_token):
-                print(parse_obj.token_id)
+                # print(parse_obj.token_id)
                 return parse_obj.token_id
         return False
         

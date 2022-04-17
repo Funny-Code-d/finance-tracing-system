@@ -1,4 +1,6 @@
 import email
+
+from sqlalchemy import values
 from .base import BaseRepository
 from typing import List
 from models.user import User, UserIn, UserRegistartion
@@ -8,17 +10,37 @@ from db.customer import customers
 
 class UserRepository(BaseRepository):
     
-    async def get_all(self)-> List[User]:
-        """Получение всех пользователей доступных по токену"""
-    
-    async def get_by_id(self, u: UserIn) -> User:
+    async def get_by_id(self, user_id: int) -> User:
         """Получение пользователя по ID"""
+        query = customers.select().where(customers.c.user_id==user_id)
+        responce_db = await self.database.fetch_one(query=query)
+        if responce_db is None:
+            return False
+        else:
+            user = User.parse_obj(responce_db)
+            return user
         
-    async def get_by_email(self, u: UserIn) -> User:
+    async def get_by_email(self, email: str) -> User:
         """Получение пользователя по Email"""
+        query = customers.select().where(customers.c.email==email)
+        responce_db = await self.database.fetch_one(query=query)
+
+        if responce_db is None:
+            return False
+        else:
+            user = User.parse_obj(responce_db)
+            return user
     
-    async def get_by_telegram_id(self, u: UserIn) -> User:
+    async def get_by_telegram_id(self, telegram_id: int) -> User:
         """Получение пользовтеля по telegram_id"""
+        query = customers.select().where(customers.c.telegram_id==telegram_id)
+        responce_db = await self.database.fetch_one(query=query)
+
+        if responce_db is None:
+            return False
+        else:
+            user = User.parse_obj(responce_db)
+            return user
         
     async def create_user(self, u: UserRegistartion, token_id: int) -> User:
         """Создание пользователя"""        
