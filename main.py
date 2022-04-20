@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 import uvicorn
 from db.base import database
-from endpoints import users, token
+from endpoints import users, token, group
 
 
 
@@ -25,8 +25,8 @@ app = FastAPI(
 
 
 app.include_router(token.route, prefix='/api/token', tags=['authorization'])
-app.include_router(users.route, prefix='/api/{token}/v1/user', tags=['users'])
-
+app.include_router(users.route, prefix='/api/{token}/user', tags=['users'])
+app.include_router(group.route, prefix='/api/{token}/group', tags=['group'])
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
