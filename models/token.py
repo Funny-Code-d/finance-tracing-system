@@ -30,3 +30,14 @@ class TokenAuthOut(BaseModel):
 class TokenAuthIn(BaseModel):
     refresh_token: str
     password: str
+
+class HubTokenModel(BaseModel):
+    token_sk: Optional[int]
+    access_token: str
+    refresh_token: str
+
+class SetTokenModel(BaseModel):
+    token_sk: Optional[int]
+    name_owner: str
+    email_owner: str
+    date_create: datetime.datetime

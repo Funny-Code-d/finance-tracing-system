@@ -18,12 +18,13 @@ async def create_user(
     users: UserRepository = Depends(get_user_repository),
     verify_token: TokenRepository = Depends(get_token_repositories)):
 
-    token_id = await verify_token.verify_token(token)
-    print(token_id)
-    if token_id is False:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token did not pass the auth")
+    token_id = await verify_token.verify_access_token(token)
+    responce = await users.create_user(u=user, token_id=token_id)
+    if responce:
+        return HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Customer created")
     else:
-        return await users.create_user(u=user, token_id=token_id)
+        return False
+
 
 
 @route.get("/{user_id}")
@@ -33,9 +34,9 @@ async def get_by_id(
     users: UserRepository = Depends(get_user_repository),
     verify_token: TokenRepository = Depends(get_token_repositories)):
 
-    token_id = await verify_token.verify_token(token)
+    token_id = await verify_token.verify_access_token(token)
     print(token_id)
-    if token_id is False:
+    if token_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token did not pass the auth")
     else:
         return await users.get_by_id(user_id=user_id)
@@ -47,9 +48,9 @@ async def get_by_email(
     users: UserRepository = Depends(get_user_repository),
     verify_token: TokenRepository = Depends(get_token_repositories)):
 
-    token_id = await verify_token.verify_token(token)
+    token_id = await verify_token.verify_access_token(token)
     print(token_id)
-    if token_id is False:
+    if token_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token did not pass the auth")
     else:
         return await users.get_by_email(email=email)
@@ -61,9 +62,9 @@ async def get_by_telegram_id(
     users: UserRepository = Depends(get_user_repository),
     verify_token: TokenRepository = Depends(get_token_repositories)):
 
-    token_id = await verify_token.verify_token(token)
+    token_id = await verify_token.verify_access_token(token)
     print(token_id)
-    if token_id is False:
+    if token_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token did not pass the auth")
     else:
         return await users.get_by_telegram_id(telegram_id=telegram_id)
