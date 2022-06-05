@@ -1,8 +1,9 @@
+from http import HTTPStatus
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from repository.users import UserRepository
 from repository.token import TokenRepository
-from models.user import User, UserIn, UserRegistartion
+from models.user import User, UserIn, UserRegistartion, UserPatch
 from .depends import get_user_repository, get_token_repositories
 # from .depends import get_current_user
 
@@ -11,7 +12,7 @@ route = APIRouter()
 
 
 
-@route.post('/')
+@route.post('/', status_code=204)
 async def create_user(
     user: UserRegistartion,
     token: str,
@@ -19,11 +20,9 @@ async def create_user(
     verify_token: TokenRepository = Depends(get_token_repositories)):
 
     token_id = await verify_token.verify_access_token(token)
-    responce = await users.create_user(u=user, token_id=token_id)
-    if responce:
-        return HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Customer created")
-    else:
-        return False
+    if token_id:
+        if await users.create_user(u=user, token_id=token_id):
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 
@@ -39,9 +38,9 @@ async def get_by_id(
     if token_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token did not pass the auth")
     else:
-        return await users.get_by_id(user_id=user_id)
+        return await users.get_by_id(user_id=user_id, token_id=token_id)
 
-@route.get("/by_email/{email}")
+@route.get("/by_email/{email}", response_model=User)
 async def get_by_email(
     email: str,
     token: str,
@@ -53,9 +52,9 @@ async def get_by_email(
     if token_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token did not pass the auth")
     else:
-        return await users.get_by_email(email=email)
+        return await users.get_by_email(email=email, token_id=token_id)
 
-@route.get("/by_telegram_id/{telegram_id}")
+@route.get("/by_telegram_id/{telegram_id}", response_model=User)
 async def get_by_telegram_id(
     telegram_id: int,
     token: str,
@@ -67,4 +66,34 @@ async def get_by_telegram_id(
     if token_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token did not pass the auth")
     else:
-        return await users.get_by_telegram_id(telegram_id=telegram_id)
+        return await users.get_by_telegram_id(telegram_id=telegram_id, token_id=token_id)
+
+@route.put("/", status_code=204)
+async def put_user(
+    user: User,
+    token: str,
+    users: UserRepository = Depends(get_user_repository),
+    verify_token: TokenRepository = Depends(get_token_repositories)):
+
+    token_id = await verify_token.verify_access_token(token)
+    if token_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token did not pass the auth")
+    else:
+        await users.put_user(u=user, token_id=token_id)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+
+@route.patch("/", status_code=204)
+async def patch_user(
+    user: UserPatch,
+    token: str,
+    users: UserRepository = Depends(get_user_repository),
+    verify_token: TokenRepository = Depends(get_token_repositories)):
+
+    token_id = await verify_token.verify_access_token(token)
+    if token_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token did not pass the auth")
+    else:
+        await users.patch_user(u=user, token_id=token_id)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)

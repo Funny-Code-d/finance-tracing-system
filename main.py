@@ -10,27 +10,35 @@ from endpoints import users, token, group
 
 tags_metadata = [
     {
-        "name" : "authorization",
-        "description" : "This section contains the endpoints with actions on the token, in particular: Registration, authorization, refresh access token."
+        "name" : "token",
+        "description" : "В данном разделе реализован функционал работы с токеном: создание, рефреш, удаление."
+    },
+    {
+        "name" : "users",
+        "description" : "В данном разделе реализован функционал работы с ресурсом пользователь: создание, удаление, полное обновление, частичное обновление, получение записи пользователя по разным ключам."
     }
 ]
 
 
 app = FastAPI(
-    title="Finance tracking system (REST API)",
-    version='0.0.2',
+    title="Информационая система контроля личных расходов (API)",
+    version='0.0.3',
     openapi_tags=tags_metadata
 )
 
 
 
-app.include_router(token.route, prefix='/api/token', tags=['authorization'])
+app.include_router(token.route, prefix='/api/token', tags=['token'])
 app.include_router(users.route, prefix='/api/{token}/user', tags=['users'])
 app.include_router(group.route, prefix='/api/{token}/group', tags=['group'])
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    return "<h1>REST API информационной системы учёта расходов</h1><p>Owner by Sosnin Denis</p>"
+    return """
+    <h1>REST API информационной системы учёта расходов</h1>
+    <p>Owner by Sosnin Denis</p>
+    <p><a href='/docs/'>Docs</a></p>
+    """
 
 # @app.get("/api/{token}/users/")
 # async def root(token: str):

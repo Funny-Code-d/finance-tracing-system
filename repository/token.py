@@ -1,108 +1,104 @@
+from fastapi import HTTPException, status, Depends
+from models.token import TokenIn, Token, TokenOut, TokenAuthIn, TokenHash, TokenDelete
+from core.security import create_hash_token, verify_hash_token
+from orm.token_map import TokenEntity
+import datetime
 from typing import List
 
-from fastapi import HTTPException, status
-from .base import BaseRepository
-from models.token import TokenIn, Token, TokenOut, TokenAuthOut, TokenAuthIn, HubTokenModel, SetTokenModel
-from db.hubs import hub_token
-from db.settelites import set_token
-from core import security
-import datetime
 
-class TokenRepository(BaseRepository):
+class TokenRepository():
+
+    def __init__(self, orm_obj):
+        self.db_orm: TokenEntity = orm_obj
     
 
-    async def create_token(self, t: TokenIn) -> TokenOut:
-        """Создание токена для нового пользователя"""
+    async def create_token(self, token: TokenIn) -> TokenOut:
+        
+        access_token = create_hash_token(token.owner + token.email_owner)
+        refresh_token = create_hash_token(token.owner + token.email_owner + token.password)
 
-        access_token = security.create_hash_token(t.owner + t.email_owner)
-        refresh_token = security.create_hash_token(t.owner + t.email_owner + t.password)
-
-        token = HubTokenModel(
+        t = Token(
             access_token=access_token,
-            refresh_token=security.create_hash_token(refresh_token)
+            refresh_token=create_hash_token(refresh_token),
+            owner=token.owner,
+            email_owner=token.email_owner,
+            date_create=datetime.datetime.now(),
         )
-        values = {**token.dict()}
-        values.pop("token_sk", None)
+
+        token_sk = await self.db_orm.add(token=t)
         
-        query = hub_token.insert().values(**values)
-        token_sk = await self.database.execute(query)
-        
-        token = SetTokenModel(
+        return TokenOut(
             token_sk=token_sk,
-            name_owner=t.owner,
-            email_owner=t.email_owner,
-            date_create=datetime.datetime.now()
-        )
-        values = {**token.dict()}
-        query = set_token.insert().values(**values)
-        await self.database.execute(query)
-
-
-        responce = TokenOut(
             access_token=access_token,
             refresh_token=refresh_token
         )
 
-        return responce
-        
-    async def refresh_token(self, token: TokenAuthIn) -> TokenAuthOut:
+
+    async def refresh_token(self, token: TokenAuthIn) -> TokenHash:
         """Создание нового jwt"""
-        query = hub_token.select()
-        refresh_token = await self.database.fetch_all(query=query)
         
-        check_flag = False
-        token_id = 0
-        for item in refresh_token:
-            parse_obj = HubTokenModel.parse_obj(item)
-            if security.verify_hash_token(token.refresh_token, parse_obj.refresh_token):
-                check_flag = True
-                token_id = parse_obj.token_sk
-        
-        if check_flag:
-            access_token=security.create_hash_token(token.refresh_token + token.password)
-            responce = TokenAuthOut(
-                access_token=security.create_hash_token(access_token)
+        token_sk = await self.verify_refresh_token(token.access_token, token.refresh_token)
+
+        if token_sk is not None:
+            new_access_token = create_hash_token(token.access_token)
+            
+            new_token = TokenHash(
+                token_sk=token_sk,
+                access_token=new_access_token
             )
-            values = {
-                "access_token" : responce.access_token,
-            }
-
-            query = hub_token.update().where(hub_token.c.token_sk==token_id).values(**values)
-            await self.database.execute(query=query)
-
-            return responce
+            
+            await self.db_orm.update_access_token(new_token)
+            return new_token
         else:
             return False
+            
+            
         
 
-    async def verify_refresh_token(self, refresh_token) -> int:
+    async def verify_refresh_token(self, access_token: str, refresh_token: str) -> int:
         """Проверка подлиности refresh токена"""
-        query = hub_token.select()
-        responce_db = await self.database.fetch_all(query=query)
+        token_sk = await self.db_orm.get_token_id(access_token)
+        try:
+            tokens = TokenHash.parse_obj(await self.db_orm.get_token(token_sk=token_sk))
+            hash_refresh_token = tokens.refresh_token
+        except ValueError:
+            return None
         
-        for item in responce_db:
-            parse_obj = HubTokenModel.parse_obj(item)
-            if security.verify_hash_token(refresh_token, parse_obj.refresh_token):
-                return parse_obj.token_sk
-        return None
+        if verify_hash_token(refresh_token, hash_refresh_token):
+            return token_sk
+        else:
+            return None
+        
+    async def verify_refresh_token_by_id(self, token_sk: str, refresh_token: str) -> int:
+        """Проверка подлиности refresh токена"""
+        try:
+            tokens = TokenHash.parse_obj(await self.db_orm.get_token(token_sk=token_sk))
+            hash_refresh_token = tokens.refresh_token
+        except ValueError:
+            return None
+        
+        if verify_hash_token(refresh_token, hash_refresh_token):
+            return True
+        else:
+            return False
+
         
     async def verify_access_token(self, access_token) -> int:
         """Проверка подлиности access токена (без хеширования)"""
-        query = hub_token.select().where(hub_token.c.access_token==access_token)
-        responce_db = await self.database.fetch_one(query)
-        
-        
-        # print("ACCESS_TOKEN", responce_db)
-        if responce_db is not None:
-            responce_db = HubTokenModel.parse_obj(responce_db)
-            return responce_db.token_sk
+        token_sk = await self.db_orm.get_token_id(access_token)
+
+        if token_sk is not None:
+            return token_sk
         else:
-            print("raise error")
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token did not pass the auth")
 
 
-    async def delete_token(self):
+    async def delete_token(self, token: TokenDelete):
         """Удаление токена"""
+        token_sk = await self.verify_refresh_token(token.access_token, token.refresh_token)
+        if token_sk:
+            await self.db_orm.delete(token_sk)
+        return True
     
     
     def calculating_duration_token(self):

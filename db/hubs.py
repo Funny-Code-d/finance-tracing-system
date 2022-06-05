@@ -20,7 +20,7 @@ hub_customer = sqlalchemy.Table(
     Column("customer_sk", Integer, primary_key=True, autoincrement=True),
     Column("email", String(30), unique=True, nullable=True),
     Column("telegram_id", Integer, unique=True, nullable=True),
-    Column("password", Text, unique=True, nullable=True)
+    Column("password", Text, nullable=True)
 )
 
 hub_group = sqlalchemy.Table(
