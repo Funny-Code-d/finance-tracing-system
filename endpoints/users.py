@@ -25,6 +25,18 @@ async def create_user(
             return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+@route.get("/", status_code=200)
+async def get_all(
+    token: str,
+    users: UserRepository = Depends(get_user_repository),
+    verify_token: TokenRepository = Depends(get_token_repositories)):
+
+    # print(token)
+    token_id = await verify_token.verify_access_token(token)
+    if token_id:
+        # print(token_id)
+        return await users.get_all(token_id)
+
 
 @route.get("/{user_id}")
 async def get_by_id(

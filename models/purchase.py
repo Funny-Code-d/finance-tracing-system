@@ -5,27 +5,27 @@ import datetime
 
 class PurchaseItem(BaseModel):
     name_product: str
-    amount: float
+    price: float
     quantity: int
     description: Optional[str]
 
 
-class OnesPurchase(BaseModel):
-    items: List[PurchaseItem]
-    date: datetime.datetime
-    total_amount: float
-    category: str
-
-
 class Purchase(BaseModel):
+    group_id: str
+    name_store: str
+    total_amount: float
+    category_id: str
+    date: datetime.datetime
+    items: List[PurchaseItem]
+
+
+class PurchaseOut(BaseModel):
     """Модель для вывода или получения ручным вводом покупок"""
-    user_id: int
     purchase_id: int
-    purchase: List[OnesPurchase]
-    range_days: Optional[int]
+    data: Purchase
 
 
-class ReceiptData(BaseModel):
+class PurchaseData(BaseModel):
     """Модель для получения информации по чеку из ФНС"""
     fn: str
     fd: str
@@ -35,13 +35,16 @@ class ReceiptData(BaseModel):
     amount: int
 
 
-class AdditingPurchase(BaseModel):
+class PurchaseIn(PurchaseData):
     """Модель для добавления новой покупки"""
-    user_id: int
-    receipt: ReceiptData
+    token_sk: Optional[int]
+    customer_sk: int
+    group_id: str
     
     
 class DeletePurchase(BaseModel):
     """Модель для удаления покупки"""
-    user_id: int
-    purchase_id: int    
+    token_sk: Optional[int]
+    customer_sk: int
+    group_id: str
+    purchase_id: int

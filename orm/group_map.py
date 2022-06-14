@@ -11,15 +11,7 @@ from core.common_func import clear_dict
 
 class GroupEntity(BaseEntity):
 
-    async def check_token_customer(self, token_sk: int, customer_sk: int):
-        query = link_token_customer.select().where(
-            link_token_customer.c.customer_sk==customer_sk,
-            link_token_customer.c.token_sk==token_sk
-        )
-        if await self.database.fetch_one(query=query):
-            return True
-        else:
-            return False
+    
 
 
     async def add(self, group: PostGroupModel) -> int:

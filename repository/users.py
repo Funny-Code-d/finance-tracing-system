@@ -16,6 +16,11 @@ class UserRepository():
     def __init__(self, orm_obj):
         self.db_orm: UserEntity = orm_obj
     
+    async def get_all(self, token_id):
+        return await self.db_orm.get_all(token_id)
+        
+
+
     async def get_by_id(self, user_id: int, token_id: int) -> User:
         """Получение пользователя по ID"""
 

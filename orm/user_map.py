@@ -33,6 +33,25 @@ class UserEntity(BaseEntity):
         return result
 
 
+    async def get_all(self, token_id):
+        query = self.generate_select_join()
+        query = query.where(
+            hub_token.c.token_sk==token_id
+        )
+        print(query)
+        try:
+            responce_db = await self.database.fetch_all(query=query)
+            print(responce_db)
+            result = list()
+            for row in responce_db:
+                result.append(User.parse_obj(row))
+            return UserList(
+                token_sk=token_id,
+                users=result
+            )
+        except ValidationError:
+            return False
+
     async def get_by_id(self, user_id: int, token_id: int) -> User:
         query = self.generate_select_join()
         query = query.where(
