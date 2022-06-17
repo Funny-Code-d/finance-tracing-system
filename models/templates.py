@@ -1,24 +1,39 @@
 from pydantic import BaseModel
-from typing import List
-import datetime
+from typing import List, Optional
 
 
-class Category(BaseModel):
-    category_id: int
+class TemplatesCategory(BaseModel):
+    category_sk: int
     name_category: str
 
+class Templates(BaseModel):
+    name_template: str
+    number_days: int
+    # categoties: List[TemplatesCategory]
 
-class RangeDate(BaseModel):
-    date_start: datetime.datetime
-    date_end: datetime.datetime
+class TemplatesIn(Templates):
+    token_sk: Optional[int]
+    customer_sk: int
+    group_sk: str
+    categories: List[int]
 
+class TemplatesOutItem(Templates):
+    categories: List[TemplatesCategory]
 
-class Template(BaseModel):
-    user_id: int
-    template_id: int
-    categories: List[Category]
-    range_date: RangeDate
-    
+class TemplatesOut(BaseModel):
+    # token_sk: Optional[int]
+    customer_sk: int
+    group_sk: str
+    items: List[TemplatesOutItem]
+
+class GetTemplates(BaseModel):
+    token_sk: int
+    customer_sk: int
+    group_sk: str
+
 class DeleteTemplate(BaseModel):
-    user_id: int
-    template_id: int
+    token_sk: Optional[int]
+    customer_sk: int
+    group_sk: str
+    template_sk: int
+

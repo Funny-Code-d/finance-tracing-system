@@ -27,6 +27,15 @@ class PurchaseEntity(BaseEntity):
         await self.database.execute(query=query)
 
         values = {
+            "purcahse_sk" : purchase_sk,
+            "category_sk" : purchase.category_id
+        }
+        print(values)
+        query = link_purchase_category.insert().values(**values)
+        print(query)
+        await self.database.execute(query=query)
+
+        values = {
             "purchase_sk" : purchase_sk,
             "total_amount" : purchase.total_amount,
             "date_purchase" : datetime.now()
@@ -39,7 +48,7 @@ class PurchaseEntity(BaseEntity):
             values = {
                 "purchase_sk" : purchase_sk,
                 "name_product" : item.name_product,
-                "price" : item.price,
+                "amount" : item.price,
                 "quantity" : item.quantity
             }
             query = set_purchase_detail.insert().values(**values)
@@ -48,11 +57,38 @@ class PurchaseEntity(BaseEntity):
         return True
     
 
-    async def delete_purchase(self):
-        pass
+    async def delete_purchase(self, purchase_sk):
+        query = link_purcahse_group.delete().where(
+            link_purcahse_group.c.purchase_sk==purchase_sk
+        )
+        if await self.database.execute(query=query):
+            query = set_purchase_detail.delete().where(
+                set_purchase_detail.c.purchase_sk==purchase_sk
+            )
+            responce1_db = await self.database.execute(query=query)
+            
+            query = set_purchase.delete().where(
+                set_purchase.c.purchase_sk==purchase_sk
+            )
+            responce2_db = await self.database.execute(query=query)
 
-    async def get_by_date(self):
-        pass
+            if responce1_db and responce2_db:
+                query = hub_purchase.delete().where(
+                    hub_purchase.c.purchase_sk==purchase_sk
+                )
+                if await self.database.execute(query=query):
+                    return True
+                else:
+                    return False
+                
+                
+
+    async def get_by_date(self, date_start, date_end):
+        query = select(
+            set_purchase.c.total_amount,
+            set_purchase.c.date_purchase,
+            
+        )
 
     async def get_by_category(self):
         pass

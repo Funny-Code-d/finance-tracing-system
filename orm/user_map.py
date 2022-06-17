@@ -5,9 +5,10 @@ from core.common_func import clear_dict
 from db.hubs import hub_token, hub_customer
 from db.links import link_token_customer
 from db.settelites import set_customer
+from core.security import hash_passwd, verify_hash_passwd
 
 from models.user import User, UserList, UserPatch, UserRegistartion
-from models.user import HubCustomerModel, SetCustomerModel
+from models.user import HubCustomerModel, SetCustomerModel, UserAuth
 
 class UserEntity(BaseEntity):
 
@@ -32,6 +33,23 @@ class UserEntity(BaseEntity):
                 result[key] = target_dict[key]
         return result
 
+
+    async def auth(self, user_data: UserAuth):
+        query = select(
+            hub_customer.c.password
+        ).join_from(link_token_customer, hub_customer).where(
+            link_token_customer.c.token_sk==user_data.token_sk,
+            hub_customer.c.email==user_data.email
+        )
+        passwd = await self.database.execute(query=query)
+        
+        
+        is_valid_passwd = verify_hash_passwd(user_data.passwd, passwd)
+        print(is_valid_passwd)
+        if is_valid_passwd:
+            return True
+        else:
+            return False
 
     async def get_all(self, token_id):
         query = self.generate_select_join()
@@ -128,7 +146,7 @@ class UserEntity(BaseEntity):
         values_hub = {
             "email" : user.email,
             "telegram_id" : user.telegram_id,
-            "password" : user.password
+            "password" : hash_passwd(user.password)
         }
 
         query = hub_customer.insert().values(**values_hub)

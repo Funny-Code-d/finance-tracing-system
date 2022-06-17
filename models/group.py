@@ -34,7 +34,7 @@ class PostGroupModel(GroupModel):
             "example" : {
                 "name_group" : "my group",
                 "access" : "private [or] public",
-                "desciption" : "Description my group",
+                "description" : "Description my group",
                 "customer_sk" : 1,
             }
         }

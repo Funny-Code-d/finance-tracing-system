@@ -31,6 +31,11 @@ class UserRegistartion(BaseModel):
     telegram_id: Optional[int]
     password: str
 
+class UserAuth(BaseModel):
+    token_sk: Optional[int]
+    email: EmailStr
+    passwd: str
+
 
     
 class UserIn(BaseModel):

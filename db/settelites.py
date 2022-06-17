@@ -35,8 +35,7 @@ set_group = sqlalchemy.Table(
 set_debtor = sqlalchemy.Table(
     "set_debtor",
     metadata,
-    Column("debtor_sk", String(100), ForeignKey("hub_debtor.debtor_sk", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
-    Column("debtor_name", String(50), nullable=False),
+    Column("debtor_sk", Integer, ForeignKey("hub_debtor.debtor_sk", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
     Column("first_name", String(30), nullable=True),
     Column("last_name", String(30), nullable=True),
     Column("telegram_id", Integer, nullable=True)
@@ -45,7 +44,8 @@ set_debtor = sqlalchemy.Table(
 set_debtbook_history = sqlalchemy.Table(
     "set_debtbook_history",
     metadata,
-    Column("debtor_sk", Integer, ForeignKey("hub_debtbook.debtbook_sk", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
+    Column("debtbook_history_sk", Integer, primary_key=True, autoincrement=True),
+    Column("debtbook_sk", Integer, ForeignKey("hub_debtbook.debtbook_sk", ondelete="CASCADE", onupdate="CASCADE")),
     Column("action", String(10), nullable=False),
     Column("amount", Float, nullable=False),
     Column("date_regist", DateTime, nullable=False, default=datetime.datetime.utcnow)
@@ -75,9 +75,9 @@ set_purchase = sqlalchemy.Table(
 set_purchase_detail = sqlalchemy.Table(
     "set_purchase_detail",
     metadata,
-    Column("purchase_detail_sk", Integer, primary_key=True),
+    Column("purchase_detail_sk", Integer, primary_key=True, autoincrement=True),
     Column("purchase_sk", Integer, ForeignKey("hub_purchase.purchase_sk", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
-    Column("name_product", String(50), nullable=False),
+    Column("name_product", String, nullable=False),
     Column("amount", Float, nullable=False),
     Column("quantity", Integer, nullable=True)
 )

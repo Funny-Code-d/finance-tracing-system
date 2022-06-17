@@ -18,5 +18,11 @@ def create_access_token() -> str:
 
 def verify_hash_token(password, hash) -> bool:
     return pwd_context.verify(password, hash)
+
+def hash_passwd(password) -> str:
+    return pwd_context.hash(password)
+
+def verify_hash_passwd(passwd, hash):
+    return pwd_context.verify(passwd, hash)
     
     

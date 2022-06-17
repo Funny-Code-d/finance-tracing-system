@@ -64,7 +64,8 @@ hub_purchase = sqlalchemy.Table(
 hub_debtor = sqlalchemy.Table(
     "hub_debtor",
     metadata,
-    Column("debtor_sk", String(100), primary_key=True)
+    Column("debtor_sk", Integer, primary_key=True, autoincrement=True),
+    Column("debtor_name", String(50), nullable=False),
 )
 
 hun_debtbook = sqlalchemy.Table(

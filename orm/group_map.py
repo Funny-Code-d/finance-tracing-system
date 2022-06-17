@@ -41,7 +41,7 @@ class GroupEntity(BaseEntity):
         values = {
             "group_sk" : group_sk,
             "name_group" : group.name_group,
-            "description" : group.desciption
+            "description" : group.description
         }
         query = set_group.insert().values(**values)
         try:

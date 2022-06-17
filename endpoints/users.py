@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from repository.users import UserRepository
 from repository.token import TokenRepository
-from models.user import User, UserIn, UserRegistartion, UserPatch
+from models.user import User, UserIn, UserRegistartion, UserPatch, UserAuth
 from .depends import get_user_repository, get_token_repositories
 # from .depends import get_current_user
 
@@ -109,3 +109,14 @@ async def patch_user(
     else:
         await users.patch_user(u=user, token_id=token_id)
         return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@route.post("/auth", status_code=200)
+async def auth_user(
+    user: UserAuth,
+    token: str,
+    users: UserRepository = Depends(get_user_repository),
+    verify_token: TokenRepository = Depends(get_token_repositories)):
+
+    token_id = await verify_token.verify_access_token(token)
+    user.token_sk = token_id
+    return await users.auth(user)

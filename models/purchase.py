@@ -14,8 +14,8 @@ class Purchase(BaseModel):
     group_id: str
     name_store: str
     total_amount: float
-    category_id: str
-    date: datetime.datetime
+    category_id: Optional[int]
+    date: Optional[datetime.datetime]
     items: List[PurchaseItem]
 
 
@@ -29,10 +29,10 @@ class PurchaseData(BaseModel):
     """Модель для получения информации по чеку из ФНС"""
     fn: str
     fd: str
-    fpd: str
-    type: int
-    date: datetime.datetime
-    amount: int
+    fp: str
+    t: str
+    n: str
+    amount: str
 
 
 class PurchaseIn(PurchaseData):
@@ -40,6 +40,8 @@ class PurchaseIn(PurchaseData):
     token_sk: Optional[int]
     customer_sk: int
     group_id: str
+    category_id: int
+    date: Optional[datetime.datetime] = datetime.datetime.now()
     
     
 class DeletePurchase(BaseModel):
@@ -48,3 +50,15 @@ class DeletePurchase(BaseModel):
     customer_sk: int
     group_id: str
     purchase_id: int
+
+
+class ParseItem(BaseModel):
+    sum: int
+    name: str
+    price: int
+    quantity: int
+
+class ParsePay(BaseModel):
+    user: str
+    totalSum: int
+    items: List[ParseItem]

@@ -3,7 +3,7 @@ from sqlalchemy import select
 from .base import BaseRepository
 from orm.user_map import UserEntity
 from typing import List
-from models.user import User, UserIn, UserPatch, UserRegistartion, HubCustomerModel, SetCustomerModel, LinkTokenCustomer
+from models.user import User, UserIn, UserPatch, UserRegistartion, HubCustomerModel, SetCustomerModel, LinkTokenCustomer, UserAuth
 from db.hubs import hub_token, hub_customer
 from db.settelites import set_customer
 from db.links import link_token_customer
@@ -18,7 +18,9 @@ class UserRepository():
     
     async def get_all(self, token_id):
         return await self.db_orm.get_all(token_id)
-        
+    
+    async def auth(self, user_data: UserAuth) -> bool:
+        return await self.db_orm.auth(user_data)
 
 
     async def get_by_id(self, user_id: int, token_id: int) -> User:

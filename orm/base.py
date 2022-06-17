@@ -6,6 +6,17 @@ class BaseEntity():
     
     def __init__(self):
         self.database = database
+
+    async def check(self, token_sk, customer_sk, group_sk):
+        valid_customer = await self.check_token_customer(token_sk, customer_sk)
+        if valid_customer:
+            valid_group = await self.check_group_customer(customer_sk, group_sk)
+            if valid_group:
+                return True
+            else:
+                return False
+        else:
+            return False
     
     async def check_token_customer(self, token_sk: int, customer_sk: int) -> bool:
         query = link_token_customer.select().where(

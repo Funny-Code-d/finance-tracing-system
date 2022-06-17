@@ -18,14 +18,14 @@ link_customer_debtor = sqlalchemy.Table(
     "link_customer_debtor",
     metadata,
     Column("customer_sk", Integer, ForeignKey("hub_customer.customer_sk", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
-    Column("debtor_sk", String(100), ForeignKey("hub_debtor.debtor_sk", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
+    Column("debtor_sk", Integer, ForeignKey("hub_debtor.debtor_sk", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
 )
 
 
 link_debtor_debtbook = sqlalchemy.Table(
     "link_debtor_debtbook",
     metadata,
-    Column("debtor_sk", String(100), ForeignKey("hub_debtor.debtor_sk", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
+    Column("debtor_sk", Integer, ForeignKey("hub_debtor.debtor_sk", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
     Column("debtbook_sk", Integer, ForeignKey("hub_debtbook.debtbook_sk", ondelete="CASCADE", onupdate="CASCADE"), primary_key=True),
 )
 
