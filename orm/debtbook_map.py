@@ -4,7 +4,8 @@ from db.hubs import hub_debtor, hun_debtbook
 from db.settelites import set_debtbook_history
 from db.links import link_debtor_debtbook, link_customer_debtor
 from models.purchase import PurchaseIn, Purchase
-from models.debtbook import DebtbookIn, DebtbookRecord, GetDebtbookRecord, PostTransaction
+from models.debtbook import DebtbookIn, DebtbookRecord, GetDebtbookRecord, PostTransaction, DebtorIn
+from models.debtbook import DebtbookRecordHistoryItem, DebtbookRecordHistory
 from sqlalchemy import select
 from pydantic.error_wrappers import ValidationError
 from typing import List
@@ -115,7 +116,7 @@ class DebtbookEntity(BaseEntity):
             res = await self.database.fetch_one(query=query)
             debtbook_sk[res['type_action']] = res['debtbook_sk']
         
-        print(debtbook_sk)
+        # print(debtbook_sk)
 
         query = hun_debtbook.select().where(
             hun_debtbook.c.debtbook_sk==debtbook_sk[debt_data.type_action]
@@ -123,7 +124,7 @@ class DebtbookEntity(BaseEntity):
         responce_db = await self.database.fetch_one(query=query)
         
         values = dict()
-        print(debt_data)
+        # print(debt_data)
         if debt_data.transaction == "add":
             values = {
                 "total_amount" : float(responce_db['total_amount']) + float(debt_data.amount)
@@ -151,8 +152,46 @@ class DebtbookEntity(BaseEntity):
         query = set_debtbook_history.insert().values(**values)
         await self.database.execute(query=query)
 
-    async def get_by_category(self):
-        pass
+    async def delete_debtor(self, debt_data: DebtorIn):
+        query = hub_debtor.delete().where(
+            hub_debtor.c.debtor_sk==debt_data.debtor_sk
+        )
 
-    async def get_by_date_and_category(self):
-        pass
+        await self.database.execute(query=query)
+        return True
+
+    async def get_history(self, debtor_sk):
+        result_take = list()
+        result_give = list()        
+        for action in ("take", "give"):
+            query = select(
+                set_debtbook_history.c.action,
+                set_debtbook_history.c.amount,
+                set_debtbook_history.c.date_regist
+            ).join_from(
+                link_debtor_debtbook,
+                hun_debtbook
+            ).join_from(hun_debtbook, set_debtbook_history).where(
+                link_debtor_debtbook.c.debtor_sk==debtor_sk,
+                hun_debtbook.c.type_action==action
+                ).order_by(set_debtbook_history.c.date_regist)
+
+            responce_db = await self.database.fetch_all(query=query)
+
+            for row in responce_db:
+                if action == "take":
+                    result_take.append(DebtbookRecordHistoryItem.parse_obj(row))
+                else:
+                    result_give.append(DebtbookRecordHistoryItem.parse_obj(row))
+
+        
+        
+        query = hub_debtor.select().where(hub_debtor.c.debtor_sk==debtor_sk)
+        responce_db = await self.database.fetch_one(query=query)
+        
+        return DebtbookRecordHistory(
+            debtbook_sk=debtor_sk,
+            debtor_name=responce_db['debtor_name'],
+            take=result_take,
+            give=result_give
+        )

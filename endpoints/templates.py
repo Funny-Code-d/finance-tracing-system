@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from repository.token import TokenRepository
-from models.templates import TemplatesIn, GetTemplates, DeleteTemplate
+from models.templates import TemplatesIn, GetTemplates, DeleteTemplate, PatchTemplate
 from repository.templates import TemplatesRepositry
 from .depends import get_templates_repositories, get_token_repositories
 
@@ -44,3 +44,14 @@ async def delete_template(
     token_sk = await token_repositories.verify_access_token(token)
     template_data.token_sk = token_sk
     return await templates_repositories.delete_template(template_data)
+
+@route.patch("/", status_code=204)
+async def patch_template(
+    token: str,
+    template_data: PatchTemplate,
+    templates_repositories: TemplatesRepositry = Depends(get_templates_repositories),
+    token_repositories: TokenRepository = Depends(get_token_repositories)):
+    
+    token_sk = await token_repositories.verify_access_token(token)
+    template_data.token_sk = token_sk
+    return await templates_repositories.patch_template(template_data)

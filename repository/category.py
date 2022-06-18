@@ -1,7 +1,7 @@
 from .base import BaseRepository
 from orm.category_map import CategoryEntity
 from models.purchase import ParsePay, PurchaseIn, PurchaseData, Purchase, PurchaseItem
-from models.category import CategoryIn, CategoryPost, CategoryItemPost
+from models.category import CategoryIn, CategoryPost, CategoryItemPost, PutCategory
 from requests import post
 from os import getenv
 
@@ -35,12 +35,10 @@ class CategoryRepository(BaseRepository):
             return False
         
     
-    async def get_purchase_month(self):
-        """Получение покупок за месяц"""
-        
-    async def get_purchase_year(self):
-        """Получение покупок за год"""
-    
-    async def get_purchase_date_range(self):
-        """Получение покупок за выбранный период"""
+    async def put_category(self, category_data: PutCategory):
+        if await self.db_orm.check(category_data.token_sk, category_data.customer_sk, category_data.group_sk):
+            return await self.db_orm.put_category(category_data)
+        else:
+            return False
+
     

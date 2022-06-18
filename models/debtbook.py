@@ -38,13 +38,18 @@ class PostTransaction(BaseModel):
 
 
 class DebtbookRecordHistoryItem(BaseModel):
-    debtbook_sk: Optional[int]
     action: str
     amount: float
-    date: datetime.datetime
+    date_regist: datetime.datetime
 
 
 class DebtbookRecordHistory(BaseModel):
     debtbook_sk: int
     debtor_name: str
-    items: List[DebtbookRecordHistoryItem]
+    take: List[DebtbookRecordHistoryItem]
+    give: List[DebtbookRecordHistoryItem]
+
+class DebtorIn(BaseModel):
+    token_sk: Optional[int]
+    customer_sk: int
+    debtor_sk: int

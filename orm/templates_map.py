@@ -1,10 +1,10 @@
-from sqlalchemy import select
+from sqlalchemy import select, values
 from .base import BaseEntity
 from db.hubs import hub_templates, hub_category
 from db.settelites import set_purchase, set_purchase_detail
 from db.links import link_templates_group, link_templates_category
 from models.purchase import PurchaseIn, Purchase
-from models.templates import TemplatesIn, TemplatesOut, TemplatesOutItem, GetTemplates, DeleteTemplate
+from models.templates import TemplatesIn, TemplatesOut, TemplatesOutItem, GetTemplates, DeleteTemplate, PatchTemplate
 from sqlalchemy import select
 from pydantic.error_wrappers import ValidationError
 from typing import List
@@ -14,6 +14,13 @@ from pprint import pprint
 
 class TemplatesEntity(BaseEntity):
 
+
+    def clean_model_data(self, target_dict):
+        result = dict()
+        for key in target_dict.keys():
+            if target_dict[key] != None:
+                result[key] = target_dict[key]
+        return result
 
     async def add_template(self, template: TemplatesIn):
         values = {
@@ -62,12 +69,14 @@ class TemplatesEntity(BaseEntity):
         responce_db = await self.database.fetch_all(query=query)
         for row in responce_db:
             result[row['template_sk']] = {
+                "template_sk" : None,
                 "name_template" : None,
                 "number_days" : None,
                 "categories" : list()
             }
 
         for row in responce_db:
+            result[row['template_sk']]['template_sk'] = row['template_sk']
             result[row['template_sk']]['name_template'] = row['name_template']
             result[row['template_sk']]['number_days'] = row['number_days']
             result[row['template_sk']]['categories'].append({
@@ -108,8 +117,41 @@ class TemplatesEntity(BaseEntity):
 
         return True
 
-    async def get_by_category(self):
-        pass
+    async def patch_template(self, template_data: PatchTemplate):
+        
+        values = {
+            "name_template" : template_data.name_template,
+            "number_days" : template_data.number_days
+        }
+
+        values = self.clean_model_data(values)
+
+        if len(values) > 0:
+            query = hub_templates.update().values(**values).where(
+                hub_templates.c.template_sk==template_data.template_sk
+            )
+
+            await self.database.execute(query=query)
+
+
+        if template_data.categories is not None:
+            if len(template_data.categories) > 0:
+                query = link_templates_category.delete().where(
+                    link_templates_category.c.template_sk==template_data.template_sk
+                )
+
+                await self.database.execute(query=query)
+
+                for categories in template_data.categories:
+                    values = {
+                        "template_sk" : template_data.template_sk,
+                        "category_sk" : categories
+                    }
+                    query = link_templates_category.insert().values(**values)
+                    await self.database.execute(query=query)
+
+        return True
+        
 
     async def get_by_date_and_category(self):
         pass

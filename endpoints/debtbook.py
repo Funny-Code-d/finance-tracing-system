@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from repository.token import TokenRepository
-from models.debtbook import DebtbookIn, PostTransaction
+from models.debtbook import DebtbookIn, PostTransaction, DebtorIn
 from repository.purchase import PurchaseRepository
 from repository.debtbook import DebtorRepository
 from .depends import get_debtbook_repositories, get_token_repositories
@@ -39,3 +39,26 @@ async def regist_transaction(
     token_sk = await token_repositories.verify_access_token(token)
     debt_data.token_sk = token_sk
     return await debtor_repositories.regist_transaction(debt_data)
+
+@route.delete("/", status_code=200)
+async def delete_debtor(
+    token: str,
+    debt_data: DebtorIn,
+    debtor_repositories: DebtorRepository = Depends(get_debtbook_repositories),
+    token_repositories: TokenRepository = Depends(get_token_repositories)):
+    
+    token_sk = await token_repositories.verify_access_token(token)
+    debt_data.token_sk = token_sk
+    return await debtor_repositories.delete_debtor(debt_data)
+
+@route.get("/{customer_sk}/history/{debtor_sk}", status_code=200)
+async def get_histoty(
+    token: str,
+    customer_sk: int,
+    debtor_sk: int,
+    debtor_repositories: DebtorRepository = Depends(get_debtbook_repositories),
+    token_repositories: TokenRepository = Depends(get_token_repositories)):
+    
+    token_sk = await token_repositories.verify_access_token(token)
+
+    return await debtor_repositories.get_history(token_sk, customer_sk, debtor_sk)

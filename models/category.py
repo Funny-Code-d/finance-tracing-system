@@ -26,3 +26,6 @@ class CategoryPost(BaseModel):
 class CategoryItemPost(CategoryPost):
     category_sk: int
 
+class PutCategory(CategoryIn):
+    category_sk: int
+

@@ -1,7 +1,7 @@
 from .base import BaseRepository
 from orm.debtbook_map import DebtbookEntity
 from models.purchase import ParsePay, PurchaseIn, PurchaseData, Purchase, PurchaseItem
-from models.debtbook import DebtbookIn, PostTransaction
+from models.debtbook import DebtbookIn, PostTransaction, DebtorIn
 from requests import post
 from os import getenv
 
@@ -37,12 +37,23 @@ class DebtorRepository(BaseRepository):
         else:
             return False
     
-    async def get_purchase_month(self):
-        """Получение покупок за месяц"""
+    async def delete_debtor(self, debt_data: DebtorIn):
+        is_valid_debtor = await self.db_orm.check_customer_debtor(debt_data.customer_sk, debt_data.debtor_sk)
+        is_valid_customer = await self.db_orm.check_token_customer(debt_data.token_sk, debt_data.customer_sk)
         
-    async def get_purchase_year(self):
-        """Получение покупок за год"""
-    
+        if is_valid_customer and is_valid_debtor:
+            return await self.db_orm.delete_debtor(debt_data=debt_data)
+        else:
+            return False
+        
+        
+    async def get_history(self, token_sk, customer_sk, debtor_sk):
+        is_valid_debtor = await self.db_orm.check_customer_debtor(customer_sk, debtor_sk)
+        is_valid_customer = await self.db_orm.check_token_customer(token_sk, customer_sk)
+        if is_valid_customer and is_valid_debtor:
+            return await self.db_orm.get_history(debtor_sk)
+        else:
+            return False
     async def get_purchase_date_range(self):
         """Получение покупок за выбранный период"""
     

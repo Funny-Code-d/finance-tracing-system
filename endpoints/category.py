@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from repository.token import TokenRepository
-from models.category import CategoryIn, CategoryPost, CategoryItemPost
+from models.category import CategoryIn, CategoryPost, CategoryItemPost, PutCategory
 from repository.purchase import PurchaseRepository
 from repository.category import CategoryRepository
 from .depends import get_category_repositories, get_token_repositories
@@ -44,4 +44,15 @@ async def get_all(
         group_sk=group_sk
     )
     return await category_repositories.get_all(category_data)
+
+@route.put("/", status_code=204)
+async def change_category(
+    token: str,
+    category_data: PutCategory,
+    category_repositories: CategoryRepository = Depends(get_category_repositories),
+    token_repositories: TokenRepository = Depends(get_token_repositories)):
+
+    token_sk = await token_repositories.verify_access_token(token)
+    category_data.token_sk = token_sk
+    return await category_repositories.put_category(category_data)
 

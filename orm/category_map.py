@@ -4,7 +4,7 @@ from db.hubs import hub_category
 from db.settelites import set_purchase, set_purchase_detail
 from db.links import link_group_category
 from models.purchase import PurchaseIn, Purchase
-from models.category import Category, CategoryIn, CategoryOut, CategoryPost, CategoryItemPost
+from models.category import Category, CategoryIn, CategoryOut, CategoryPost, CategoryItemPost, PutCategory
 from sqlalchemy import select
 from pydantic.error_wrappers import ValidationError
 from typing import List
@@ -37,7 +37,12 @@ class CategoryEntity(BaseEntity):
             link_group_category.c.category_sk==category_data.category_sk
         )
         await self.database.execute(query=query)
-                
+
+        query = hub_category.delete().where(
+            hub_category.c.category_sk==category_data.category_sk
+        )
+        await self.database.execute(query=query)
+        return True
                 
 
     async def get_all(self, category_data: CategoryPost):
@@ -50,7 +55,7 @@ class CategoryEntity(BaseEntity):
         result = list()
         for row in responce_db:
             result.append(Category.parse_obj(row))
-        print(result)
+        # print(result)
         
         return CategoryOut(
             customer_sk=category_data.customer_sk,
@@ -58,8 +63,13 @@ class CategoryEntity(BaseEntity):
             categories=result
         )
 
-    async def get_by_category(self):
-        pass
+    async def put_category(self, category_data: PutCategory):
+        
+        values = {
+            "name_category" : category_data.category_name
+        }
+        query = hub_category.update().values(**values).where(hub_category.c.category_sk==category_data.category_sk)
 
-    async def get_by_date_and_category(self):
-        pass
+        await self.database.execute(query=query)
+
+        return True

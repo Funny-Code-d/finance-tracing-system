@@ -37,3 +37,12 @@ class DeleteTemplate(BaseModel):
     group_sk: str
     template_sk: int
 
+class PatchTemplate(BaseModel):
+    token_sk: Optional[int]
+    customer_sk: int
+    group_sk: str
+    template_sk: int
+    name_template: Optional[str]
+    number_days: Optional[int]
+    categories: Optional[List[int]]
+
