@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from repository.users import UserRepository
 from repository.token import TokenRepository
-from models.user import User, UserIn, UserRegistartion, UserPatch, UserAuth
+from models.user import User, UserIn, UserRegistartion, UserPatch, UserAuth, DeleteUser
 from .depends import get_user_repository, get_token_repositories
 # from .depends import get_current_user
 
@@ -120,3 +120,14 @@ async def auth_user(
     token_id = await verify_token.verify_access_token(token)
     user.token_sk = token_id
     return await users.auth(user)
+
+@route.delete("/", status_code=204)
+async def delete_user(
+    user: DeleteUser,
+    token: str,
+    users: UserRepository = Depends(get_user_repository),
+    verify_token: TokenRepository = Depends(get_token_repositories)):
+
+    token_id = await verify_token.verify_access_token(token)
+    user.token_sk = token_id
+    return await users.delete_user(user)

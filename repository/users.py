@@ -3,7 +3,7 @@ from sqlalchemy import select
 from .base import BaseRepository
 from orm.user_map import UserEntity
 from typing import List
-from models.user import User, UserIn, UserPatch, UserRegistartion, HubCustomerModel, SetCustomerModel, LinkTokenCustomer, UserAuth
+from models.user import User, UserIn, UserPatch, UserRegistartion, HubCustomerModel, SetCustomerModel, LinkTokenCustomer, UserAuth, DeleteUser
 from db.hubs import hub_token, hub_customer
 from db.settelites import set_customer
 from db.links import link_token_customer
@@ -68,8 +68,10 @@ class UserRepository():
         is_update = await self.db_orm.patch(u)
         return is_update
         
-    async def delete_user(self, u: UserIn) -> User:
-        """Удаление пользовтаеля"""
+    async def delete_user(self, u: DeleteUser) -> User:
+        is_valid_token = await self.db_orm.check_token_customer(u.token_sk, u.customer_sk)
+        if is_valid_token:
+            return await self.db_orm.delete_user(u)
         
     async def merge_user_defferent_platform(self, u: UserIn) -> User:
         """Слияние учётных записей одного пользователя с разных платформ"""

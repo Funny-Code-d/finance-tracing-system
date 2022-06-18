@@ -8,7 +8,7 @@ from db.settelites import set_customer
 from core.security import hash_passwd, verify_hash_passwd
 
 from models.user import User, UserList, UserPatch, UserRegistartion
-from models.user import HubCustomerModel, SetCustomerModel, UserAuth
+from models.user import HubCustomerModel, SetCustomerModel, UserAuth, DeleteUser
 
 class UserEntity(BaseEntity):
 
@@ -218,29 +218,31 @@ class UserEntity(BaseEntity):
         return was_updated
 
 
-    async def delete(self, user_id: int, token_id: int):
+    async def delete_user(self, u: DeleteUser):
         query = link_token_customer.select().where(
-            link_token_customer.c.customer_sk==user_id,
-            link_token_customer.c.token_sk==token_id
+            link_token_customer.c.customer_sk==u.customer_sk,
+            link_token_customer.c.token_sk==u.token_sk
         )
 
         is_existence = await self.database.fetch_one(query=query)
-
+        print(is_existence)
         if is_existence is not None:
             query = link_token_customer.delete().where(
-                link_token_customer.c.customer_sk==user_id,
-                link_token_customer.c.token_sk==token_id
+                link_token_customer.c.customer_sk==u.customer_sk,
+                link_token_customer.c.token_sk==u.token_sk
             )
-            self.database.execute(query=query)
-
-            query = hub_customer.delete().where(
-                hub_customer.c.customer_sk==user_id
-            )
-            self.database.execute(query=query)
+            await self.database.execute(query=query)
 
             query = set_customer.delete().where(
-                set_customer.c.customer_sk==user_id
+                set_customer.c.customer_sk==u.customer_sk
             )
-            self.database.execute(query=query)
+            await self.database.execute(query=query)
+
+            query = hub_customer.delete().where(
+                hub_customer.c.customer_sk==u.customer_sk
+            )
+            await self.database.execute(query=query)
+
+            
         else:
             return False

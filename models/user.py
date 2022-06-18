@@ -76,3 +76,7 @@ class UserPatch(BaseModel):
 
             }
         }
+
+class DeleteUser(BaseModel):
+    token_sk: Optional[int]
+    customer_sk: int
