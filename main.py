@@ -59,11 +59,8 @@ app.include_router(debtbook.route, prefix="/api/{token}/debtbook", tags=["debtbo
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    return """
-    <h1>REST API информационной системы учёта расходов</h1>
-    <p>Owner by Sosnin Denis</p>
-    <p><a href='/docs/'>Docs</a></p>
-    """
+    with open("index.html", 'r') as file:
+        return file.read()
 
 # @app.get("/api/{token}/users/")
 # async def root(token: str):
