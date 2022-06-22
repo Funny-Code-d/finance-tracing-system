@@ -62,13 +62,6 @@ async def index():
     with open("index.html", 'r') as file:
         return file.read()
 
-# @app.get("/api/{token}/users/")
-# async def root(token: str):
-#         return {
-#         "message": "Hello World",
-#         "token" : token
-#         }
-
 @app.on_event("startup")
 async def startup():
     await database.connect()
@@ -80,4 +73,4 @@ async def shutdown():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", port=8000, host='0.0.0.0', reload=True)
+    uvicorn.run("main:app", port=8000, host='0.0.0.0', reload=False)
