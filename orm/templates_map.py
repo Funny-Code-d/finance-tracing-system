@@ -2,14 +2,17 @@ from sqlalchemy import select, values
 from .base import BaseEntity
 from db.hubs import hub_templates, hub_category
 from db.settelites import set_purchase, set_purchase_detail
-from db.links import link_templates_group, link_templates_category
+from db.links import link_templates_group, link_templates_category, link_purcahse_group
 from models.purchase import PurchaseIn, Purchase
-from models.templates import TemplatesIn, TemplatesOut, TemplatesOutItem, GetTemplates, DeleteTemplate, PatchTemplate
+from models.templates import GetGeneralStatistics, TemplatesIn, TemplatesOut, TemplatesOutItem, GetTemplates, DeleteTemplate, PatchTemplate
 from sqlalchemy import select
 from pydantic.error_wrappers import ValidationError
 from typing import List
-from datetime import datetime
+from datetime import date, timedelta
 from pprint import pprint
+from db.hubs import hub_purchase
+from db.settelites import set_purchase
+
 
 
 class TemplatesEntity(BaseEntity):
@@ -153,5 +156,63 @@ class TemplatesEntity(BaseEntity):
         return True
         
 
-    async def get_by_date_and_category(self):
-        pass
+    async def get_general_statistics(self, template_data: GetGeneralStatistics):
+        date_start = date.today() - timedelta()
+        query = select(
+            hub_purchase.c.name_store,
+            set_purchase.c.total_amount,
+            set_purchase.c.date_purcahse
+        ).join_from(link_purcahse_group, hub_purchase)
+        query = query.join_from(hub_purchase, set_purchase).where(set_purchase.c.date_purchase > date_start)
+
+        responce_db = await self.database.fetch_all()
+        
+        if responce_db:
+            result = list()
+            for row in responce_db:
+                item = {
+                    "name_store" : row['name_store'],
+                    "total_amount" : row['total_amount'],
+                    "date_purchase" : row['date_purchase']
+                }
+                result.append(item)
+            return result
+        else:
+            return False
+        
+    
+    async def get_general_statistics_detail(self, template_data: GetGeneralStatistics):
+        date_start = date.today() - timedelta()
+        query = select(
+            hub_purchase.c.purchase_sk,
+            hub_purchase.c.name_store,
+            set_purchase.c.total_amount,
+            set_purchase.c.date_purcahse
+        ).join_from(link_purcahse_group, hub_purchase)
+        query = query.join_from(hub_purchase, set_purchase).where(set_purchase.c.date_purchase > date_start)
+
+        responce_db = await self.database.fetch_all()
+        
+        if responce_db:
+            result = list()
+            for row in responce_db:
+
+                query = set_purchase_detail.select().where(set_purchase_detail.c.purchase_sk==row['purchase_sk'])
+                responce_db_item = await self.database.fetch_all()
+                detail_purchase = list()
+                for row_item in responce_db_item:
+                    detail_purchase.append({
+                        "name_product" : row_item['name_product'],
+                        "amount" : row_item['anount'],
+                        "quantity" : row_item['quantity']
+                    })
+                item = {
+                    "name_store" : row['name_store'],
+                    "total_amount" : row['total_amount'],
+                    "date_purchase" : row['date_purchase'],
+                    "detail" : detail_purchase
+                }
+                result.append(item)
+            return result
+        else:
+            return False

@@ -46,3 +46,9 @@ class PatchTemplate(BaseModel):
     number_days: Optional[int]
     categories: Optional[List[int]]
 
+
+class GetGeneralStatistics(BaseModel):
+    token_sk: Optional[int]
+    customer_sk: int
+    group_sk: str
+    number_days: int
