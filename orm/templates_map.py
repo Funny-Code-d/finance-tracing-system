@@ -187,23 +187,23 @@ class TemplatesEntity(BaseEntity):
             hub_purchase.c.purchase_sk,
             hub_purchase.c.name_store,
             set_purchase.c.total_amount,
-            set_purchase.c.date_purcahse
+            set_purchase.c.date_purchase
         ).join_from(link_purcahse_group, hub_purchase)
-        query = query.join_from(hub_purchase, set_purchase).where(set_purchase.c.date_purchase > date_start)
+        query = query.join_from(hub_purchase, set_purchase).where(set_purchase.c.date_purchase > date_start, link_purcahse_group.c.group_sk==template_data.group_sk)
 
-        responce_db = await self.database.fetch_all()
+        responce_db = await self.database.fetch_all(query=query)
         
         if responce_db:
             result = list()
             for row in responce_db:
 
                 query = set_purchase_detail.select().where(set_purchase_detail.c.purchase_sk==row['purchase_sk'])
-                responce_db_item = await self.database.fetch_all()
+                responce_db_item = await self.database.fetch_all(query=query)
                 detail_purchase = list()
                 for row_item in responce_db_item:
                     detail_purchase.append({
                         "name_product" : row_item['name_product'],
-                        "amount" : row_item['anount'],
+                        "amount" : row_item['amount'],
                         "quantity" : row_item['quantity']
                     })
                 item = {

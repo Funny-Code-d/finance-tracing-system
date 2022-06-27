@@ -7,6 +7,6 @@ from .base import metadata, engine
 
 
 metadata.create_all(bind=engine)
-# metadata.drop_all(bind=engine)
+#metadata.drop_all(bind=engine)
 # 
 
