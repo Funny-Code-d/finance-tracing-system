@@ -1,7 +1,6 @@
 from sqlalchemy import select
 from .base import BaseEntity
 from db.hubs import hub_category
-from db.settelites import set_purchase, set_purchase_detail
 from db.links import link_group_category
 from models.purchase import PurchaseIn, Purchase
 from models.category import Category, CategoryIn, CategoryOut, CategoryPost, CategoryItemPost, PutCategory

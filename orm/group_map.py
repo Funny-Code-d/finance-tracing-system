@@ -4,7 +4,7 @@ from .base import BaseEntity
 from models.group import PostGroupModel, GetGroupModelRequest, GetAllGroupModelRequest, GroupModel
 from models.group import GetGroupModelResponce, GetAllGroupModelResponce, PatchGroupModel
 from db.hubs import hub_group, hub_customer
-from db.settelites import set_group
+from db.settelites import sat_group
 from db.links import link_admin_group, link_token_customer
 from pydantic.error_wrappers import ValidationError
 from core.common_func import clear_dict
@@ -43,7 +43,7 @@ class GroupEntity(BaseEntity):
             "name_group" : group.name_group,
             "description" : group.description
         }
-        query = set_group.insert().values(**values)
+        query = sat_group.insert().values(**values)
         try:
             await self.database.execute(query=query)
         except UniqueViolationError:
@@ -57,13 +57,13 @@ class GroupEntity(BaseEntity):
             hub_customer.c.customer_sk,
             hub_group.c.group_sk,
             hub_group.c.access,
-            set_group.c.name_group,
-            set_group.c.description
+            sat_group.c.name_group,
+            sat_group.c.description
         )
 
         query = query.join_from(hub_customer, link_admin_group)
         query = query.join_from(link_admin_group, hub_group)
-        query = query.join_from(hub_group, set_group)
+        query = query.join_from(hub_group, sat_group)
         query = query.where(
             hub_group.c.group_sk==group.group_sk,
             hub_customer.c.customer_sk==group.customer_sk
@@ -80,13 +80,13 @@ class GroupEntity(BaseEntity):
             hub_customer.c.customer_sk,
             hub_group.c.group_sk,
             hub_group.c.access,
-            set_group.c.name_group,
-            set_group.c.description
+            sat_group.c.name_group,
+            sat_group.c.description
         )
 
         query = query.join_from(hub_customer, link_admin_group)
         query = query.join_from(link_admin_group, hub_group)
-        query = query.join_from(hub_group, set_group)
+        query = query.join_from(hub_group, sat_group)
         query = query.where(
             hub_customer.c.customer_sk==group.customer_sk
         )
@@ -116,7 +116,7 @@ class GroupEntity(BaseEntity):
         }
         values = clear_dict(target_dict=values, value=None)
         if len(values) > 0:
-            query = set_group.update().values(**values).where(set_group.c.group_sk==group.group_sk)
+            query = sat_group.update().values(**values).where(sat_group.c.group_sk==group.group_sk)
             await self.database.execute(query=query)
 
 

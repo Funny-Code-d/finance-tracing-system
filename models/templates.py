@@ -52,3 +52,9 @@ class GetGeneralStatistics(BaseModel):
     customer_sk: int
     group_sk: str
     number_days: int
+
+class GetReport(BaseModel):
+    token_sk: int
+    customer_sk: int
+    group_sk: int
+    template_sk: int

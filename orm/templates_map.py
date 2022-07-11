@@ -1,17 +1,17 @@
 from sqlalchemy import select, values
 from .base import BaseEntity
 from db.hubs import hub_templates, hub_category
-from db.settelites import set_purchase, set_purchase_detail
-from db.links import link_templates_group, link_templates_category, link_purcahse_group
+from db.settelites import sat_purchase, sat_purchase_detail
+from db.links import link_templates_group, link_templates_category, link_purcahse_group, link_purchase_category
 from models.purchase import PurchaseIn, Purchase
-from models.templates import GetGeneralStatistics, TemplatesIn, TemplatesOut, TemplatesOutItem, GetTemplates, DeleteTemplate, PatchTemplate
+from models.templates import GetGeneralStatistics, GetReport, TemplatesIn, TemplatesOut, TemplatesOutItem, GetTemplates, DeleteTemplate, PatchTemplate
 from sqlalchemy import select
 from pydantic.error_wrappers import ValidationError
 from typing import List
 from datetime import date, timedelta
 from pprint import pprint
 from db.hubs import hub_purchase
-from db.settelites import set_purchase
+
 
 
 
@@ -160,10 +160,10 @@ class TemplatesEntity(BaseEntity):
         date_start = date.today() - timedelta()
         query = select(
             hub_purchase.c.name_store,
-            set_purchase.c.total_amount,
-            set_purchase.c.date_purcahse
+            sat_purchase.c.total_amount,
+            sat_purchase.c.date_purcahse
         ).join_from(link_purcahse_group, hub_purchase)
-        query = query.join_from(hub_purchase, set_purchase).where(set_purchase.c.date_purchase > date_start)
+        query = query.join_from(hub_purchase, sat_purchase).where(sat_purchase.c.date_purchase > date_start)
 
         responce_db = await self.database.fetch_all()
         
@@ -186,10 +186,10 @@ class TemplatesEntity(BaseEntity):
         query = select(
             hub_purchase.c.purchase_sk,
             hub_purchase.c.name_store,
-            set_purchase.c.total_amount,
-            set_purchase.c.date_purchase
+            sat_purchase.c.total_amount,
+            sat_purchase.c.date_purchase
         ).join_from(link_purcahse_group, hub_purchase)
-        query = query.join_from(hub_purchase, set_purchase).where(set_purchase.c.date_purchase > date_start, link_purcahse_group.c.group_sk==template_data.group_sk)
+        query = query.join_from(hub_purchase, sat_purchase).where(sat_purchase.c.date_purchase > date_start, link_purcahse_group.c.group_sk==template_data.group_sk)
 
         responce_db = await self.database.fetch_all(query=query)
         
@@ -197,7 +197,7 @@ class TemplatesEntity(BaseEntity):
             result = list()
             for row in responce_db:
 
-                query = set_purchase_detail.select().where(set_purchase_detail.c.purchase_sk==row['purchase_sk'])
+                query = sat_purchase_detail.select().where(sat_purchase_detail.c.purchase_sk==row['purchase_sk'])
                 responce_db_item = await self.database.fetch_all(query=query)
                 detail_purchase = list()
                 for row_item in responce_db_item:
@@ -216,3 +216,51 @@ class TemplatesEntity(BaseEntity):
             return result
         else:
             return False
+    
+
+    async def get_templates(self, templates_data: GetReport):
+
+        query = hub_templates.seelect().where(hub_templates.c.template_sk==templates_data.template_sk)
+
+        repsonce_db = await self.database.fetch_one(query=query)
+        name_template = responce_db['name_template']
+        number_days = repsonce_db['number_days']
+
+        query = link_templates_category.select().where(link_templates_category.c.template_sk==templates_data.template_sk)
+
+        responce_db = await self.database.fetch_all(query=query)
+        categories_list = list()
+        if len(responce_db) > 0:
+            for row in responce_db:
+                categories_list.append(row['category_sk'])
+        else:
+            return (name_template, number_days, categories_list)
+
+        
+    async def get_purchase_by_template(self, group_sk, number_days, categories):
+        date_start = date.today() - timedelta(number_days)
+        query = select(
+            hub_purchase.c.purchase_sk,
+            hub_purchase.c.name_store).join_from(link_purcahse_group, hub_purchase)
+        query = query.join_from(hub_templates, link_purchase_category)
+        query = query.where(
+            link_purcahse_group.c.group_sk==group_sk,
+            hub_purchase.c.date_purchase>=date_start,
+            link_purchase_category.c.category_sk.in_(categories)
+            )
+        print(query)
+
+        responce_db = await self.database.fetch_all(query)
+
+        result = list()
+        if len(responce_db) > 0:
+            for row in responce_db:
+                result.append({
+                    "purchase_sk" : row['purchase_sk'],
+                    "name_store" : row['purchase_sk']
+                })
+        
+        return result
+
+        # for item in categories:
+        #     query = query.where(link_purchase_category.c.)

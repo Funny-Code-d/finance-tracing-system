@@ -1,7 +1,7 @@
 import datetime
 from sqlalchemy.schema import Sequence
 from sqlalchemy import CheckConstraint, ForeignKey, Column
-from sqlalchemy import String, Integer, Text, Boolean, Float
+from sqlalchemy import String, Integer, Text, Boolean, Float, DateTime
 import sqlalchemy
 from .base import metadata
 
@@ -58,7 +58,8 @@ hub_purchase = sqlalchemy.Table(
     "hub_purchase",
     metadata,
     Column("purchase_sk", Integer, primary_key=True, autoincrement=True),
-    Column("name_store", String(50), nullable=True)
+    Column("name_store", String(50), nullable=True),
+    Column("date_purchase", DateTime, nullable=False, default=datetime.datetime.utcnow)
 )
 
 hub_debtor = sqlalchemy.Table(

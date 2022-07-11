@@ -4,7 +4,7 @@ from sqlalchemy import select
 from core.common_func import clear_dict
 from db.hubs import hub_token, hub_customer
 from db.links import link_token_customer
-from db.settelites import set_customer
+from db.settelites import sat_customer
 from core.security import hash_passwd, verify_hash_passwd
 
 from models.user import User, UserList, UserPatch, UserRegistartion
@@ -17,12 +17,12 @@ class UserEntity(BaseEntity):
             hub_customer.c.customer_sk,
             hub_customer.c.email,
             hub_customer.c.telegram_id,
-            set_customer.c.first_name,
-            set_customer.c.last_name
+            sat_customer.c.first_name,
+            sat_customer.c.last_name
         )
         query = query.join_from(hub_token, link_token_customer)
         query = query.join_from(link_token_customer, hub_customer)
-        query = query.join_from(hub_customer, set_customer)
+        query = query.join_from(hub_customer, sat_customer)
 
         return query
     
@@ -159,7 +159,7 @@ class UserEntity(BaseEntity):
             "last_name" : user.last_name
         }
 
-        query = set_customer.insert().values(**values_set)
+        query = sat_customer.insert().values(**values_set)
         await self.database.execute(query=query)
 
         # create record in link_token_customer
@@ -187,7 +187,7 @@ class UserEntity(BaseEntity):
         query = hub_customer.update().values(**values_hub).where(hub_customer.c.customer_sk == user.customer_sk)
         await self.database.execute(query=query)
 
-        query  = set_customer.update().values(**values_set).where(hub_customer.c.customer_sk == user.customer_sk)
+        query  = sat_customer.update().values(**values_set).where(hub_customer.c.customer_sk == user.customer_sk)
         await self.database.execute(query=query)
     
     async def patch(self, user: UserPatch) -> bool:
@@ -211,7 +211,7 @@ class UserEntity(BaseEntity):
             was_updated = True
         
         if len(values_set) > 0:
-            query = set_customer.update().values(**values_set).where(set_customer.c.customer_sk==user.customer_sk)
+            query = sat_customer.update().values(**values_set).where(sat_customer.c.customer_sk==user.customer_sk)
             await self.database.execute(query=query)
             was_updated = True
         
@@ -233,8 +233,8 @@ class UserEntity(BaseEntity):
             )
             await self.database.execute(query=query)
 
-            query = set_customer.delete().where(
-                set_customer.c.customer_sk==u.customer_sk
+            query = sat_customer.delete().where(
+                sat_customer.c.customer_sk==u.customer_sk
             )
             await self.database.execute(query=query)
 

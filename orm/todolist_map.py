@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from .base import BaseEntity
 from db.hubs import hub_todo_list
-from db.settelites import set_item_todo_list
+from db.settelites import sat_item_todo_list
 from db.links import link_group_todo_list, link_templates_category
 from models.purchase import PurchaseIn, Purchase
 from models.todolist import ToDoListIn, GetToDoList, GetToDoListById, ToDoListItemIn, DeleteToDoList, DeleteItemToDoList
@@ -39,7 +39,7 @@ class ToDoListEntity(BaseEntity):
                 "complited" : False
             }
 
-            query = set_item_todo_list.insert().values(**values)
+            query = sat_item_todo_list.insert().values(**values)
             await self.database.execute(query=query)
         
         return True
@@ -54,7 +54,7 @@ class ToDoListEntity(BaseEntity):
             "complited" : False
         }
         
-        query = set_item_todo_list.insert().values(**values)
+        query = sat_item_todo_list.insert().values(**values)
         await self.database.execute(query=query)
         return True
     
@@ -80,7 +80,7 @@ class ToDoListEntity(BaseEntity):
                 "items" : list()
             }
 
-            query = set_item_todo_list.select().where(set_item_todo_list.c.todo_list_sk==row['todo_list_sk'])
+            query = sat_item_todo_list.select().where(sat_item_todo_list.c.todo_list_sk==row['todo_list_sk'])
 
             item_todo_responce_db = await self.database.fetch_all(query=query)
 
@@ -106,7 +106,7 @@ class ToDoListEntity(BaseEntity):
             "items" : list()
         }
 
-        query = set_item_todo_list.select().where(set_item_todo_list.c.todo_list_sk==todolist_data.todo_list_sk)
+        query = sat_item_todo_list.select().where(sat_item_todo_list.c.todo_list_sk==todolist_data.todo_list_sk)
         responce_db = await self.database.fetch_all(query=query)
 
         for item_todo_row in responce_db:
@@ -136,7 +136,7 @@ class ToDoListEntity(BaseEntity):
     
     async def delete_item_todo_list(self, todolist_data: DeleteItemToDoList):
 
-        query = set_item_todo_list.delete().where(set_item_todo_list.c.item_todo_list_sk==todolist_data.item_todo_list_sk)
+        query = sat_item_todo_list.delete().where(sat_item_todo_list.c.item_todo_list_sk==todolist_data.item_todo_list_sk)
 
         await self.database.execute(query=query)
 
@@ -144,7 +144,7 @@ class ToDoListEntity(BaseEntity):
 
     async def complited_item(self, todolist_data: DeleteItemToDoList):
 
-        query = set_item_todo_list.select().where(set_item_todo_list.c.item_todo_list_sk==todolist_data.item_todo_list_sk)
+        query = sat_item_todo_list.select().where(sat_item_todo_list.c.item_todo_list_sk==todolist_data.item_todo_list_sk)
 
         responce_db = await self.database.fetch_one(query=query)
     
@@ -152,7 +152,7 @@ class ToDoListEntity(BaseEntity):
             "complited" : not responce_db['complited']
         }
 
-        query = set_item_todo_list.update().values(**values).where(set_item_todo_list.c.item_todo_list_sk==todolist_data.item_todo_list_sk)
+        query = sat_item_todo_list.update().values(**values).where(sat_item_todo_list.c.item_todo_list_sk==todolist_data.item_todo_list_sk)
 
         await self.database.execute(query=query)
 

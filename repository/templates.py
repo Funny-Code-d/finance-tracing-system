@@ -1,6 +1,6 @@
 from .base import BaseRepository
 from orm.templates_map import TemplatesEntity
-from models.templates import GetGeneralStatistics, TemplatesIn, GetTemplates, DeleteTemplate, PatchTemplate
+from models.templates import GetGeneralStatistics, GetReport, TemplatesIn, GetTemplates, DeleteTemplate, PatchTemplate
 from requests import post
 from os import getenv
 
@@ -65,6 +65,14 @@ class TemplatesRepositry(BaseRepository):
         else:
             return False
     
-    async def get_purchase_date_range(self):
-        """Получение покупок за выбранный период"""
+    # async def get_report(self, templates_data: GetReport):
+    #     if await self.db_orm.check(templates_data.token_sk, templates_data.customer_sk, templates_data.group_sk):
+            
+    #         name_template, number_days, categories = self.db_orm.get_templates(templates_data)
+
+    #         if len(categories) > 0:
+                
+            
+    #     else:
+    #         return False
     

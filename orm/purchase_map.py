@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from .base import BaseEntity
 from db.hubs import hub_purchase
-from db.settelites import set_purchase, set_purchase_detail
+from db.settelites import sat_purchase, sat_purchase_detail
 from db.links import link_purcahse_group, link_purchase_category
 from models.purchase import PurchaseIn, Purchase
 from sqlalchemy import select
@@ -13,7 +13,8 @@ class PurchaseEntity(BaseEntity):
 
     async def additing_purchase(self, purchase: Purchase):
         values = {
-            "name_store" : purchase.name_store
+            "name_store" : purchase.name_store,
+            "date_purchase" : datetime.now()
         }
         query = hub_purchase.insert().values(**values)
         purchase_sk = await self.database.execute(query=query)
@@ -38,10 +39,9 @@ class PurchaseEntity(BaseEntity):
         values = {
             "purchase_sk" : purchase_sk,
             "total_amount" : purchase.total_amount,
-            "date_purchase" : datetime.now()
         }
 
-        query = set_purchase.insert().values(**values)
+        query = sat_purchase.insert().values(**values)
         await self.database.execute(query=query)
 
         for item in purchase.items:
@@ -51,7 +51,7 @@ class PurchaseEntity(BaseEntity):
                 "amount" : item.price,
                 "quantity" : item.quantity
             }
-            query = set_purchase_detail.insert().values(**values)
+            query = sat_purchase.insert().values(**values)
             await self.database.execute(query=query)
         
         return True
@@ -62,13 +62,13 @@ class PurchaseEntity(BaseEntity):
             link_purcahse_group.c.purchase_sk==purchase_sk
         )
         if await self.database.execute(query=query):
-            query = set_purchase_detail.delete().where(
-                set_purchase_detail.c.purchase_sk==purchase_sk
+            query = sat_purchase_detail.delete().where(
+                sat_purchase_detail.c.purchase_sk==purchase_sk
             )
             responce1_db = await self.database.execute(query=query)
             
-            query = set_purchase.delete().where(
-                set_purchase.c.purchase_sk==purchase_sk
+            query = sat_purchase.delete().where(
+                sat_purchase.c.purchase_sk==purchase_sk
             )
             responce2_db = await self.database.execute(query=query)
 
@@ -85,8 +85,8 @@ class PurchaseEntity(BaseEntity):
 
     async def get_by_date(self, date_start, date_end):
         query = select(
-            set_purchase.c.total_amount,
-            set_purchase.c.date_purchase,
+            sat_purchase.c.total_amount,
+            sat_purchase.c.date_purchase,
             
         )
 

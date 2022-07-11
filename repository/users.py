@@ -4,9 +4,6 @@ from .base import BaseRepository
 from orm.user_map import UserEntity
 from typing import List
 from models.user import User, UserIn, UserPatch, UserRegistartion, HubCustomerModel, SetCustomerModel, LinkTokenCustomer, UserAuth, DeleteUser
-from db.hubs import hub_token, hub_customer
-from db.settelites import set_customer
-from db.links import link_token_customer
 from core import security
 from pydantic.error_wrappers import ValidationError
 

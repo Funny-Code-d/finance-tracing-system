@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from .base import BaseEntity
 from db.hubs import hub_token
-from db.settelites import set_token
+from db.settelites import sat_token
 from models.token import Token, TokenHash, TokenInfo
 from sqlalchemy import select
 from pydantic.error_wrappers import ValidationError
@@ -35,10 +35,10 @@ class TokenEntity(BaseEntity):
     # Получение информации о токене
     async def get_token_info(self, token_sk: int) -> TokenInfo:
         query = select(
-            set_token.c.name_owner,
-            set_token.c.email_owner,
-            set_token.c.date_create
-        ).where(set_token.c.token_sk == token_sk)
+            sat_token.c.name_owner,
+            sat_token.c.email_owner,
+            sat_token.c.date_create
+        ).where(sat_token.c.token_sk == token_sk)
 
         try:
             return TokenInfo.parse_obj(await self.database.fetch_one(query=query))
@@ -62,7 +62,7 @@ class TokenEntity(BaseEntity):
             "email_owner" : token.email_owner,
             "date_create" : token.date_create
         }
-        query = set_token.insert().values(**values_set_token)
+        query = sat_token.insert().values(**values_set_token)
         await self.database.execute(query=query)
 
         return token_sk
@@ -78,7 +78,7 @@ class TokenEntity(BaseEntity):
 
     async def delete(self, token_sk: int) -> None:
 
-        query = set_token.delete().where(set_token.c.token_sk==token_sk)
+        query = sat_token.delete().where(sat_token.c.token_sk==token_sk)
         await self.database.execute(query=query)
         
         query = hub_token.delete().where(hub_token.c.token_sk==token_sk)

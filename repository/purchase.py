@@ -44,6 +44,7 @@ class PurchaseRepository(BaseRepository):
         )
 
         receipt_info = await self.request_fns(data)
+        print(receipt_info)
         result_items = list()
 
         for item in receipt_info.items:

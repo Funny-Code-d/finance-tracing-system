@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from .base import BaseEntity
 from db.hubs import hub_debtor, hun_debtbook
-from db.settelites import set_debtbook_history
+from db.settelites import sat_debtbook_history
 from db.links import link_debtor_debtbook, link_customer_debtor
 from models.purchase import PurchaseIn, Purchase
 from models.debtbook import DebtbookIn, DebtbookRecord, GetDebtbookRecord, PostTransaction, DebtorIn
@@ -149,7 +149,7 @@ class DebtbookEntity(BaseEntity):
             "amount" : debt_data.amount,
             "date_regist" : datetime.now()
         }
-        query = set_debtbook_history.insert().values(**values)
+        query = sat_debtbook_history.insert().values(**values)
         await self.database.execute(query=query)
 
     async def delete_debtor(self, debt_data: DebtorIn):
@@ -165,16 +165,16 @@ class DebtbookEntity(BaseEntity):
         result_give = list()        
         for action in ("take", "give"):
             query = select(
-                set_debtbook_history.c.action,
-                set_debtbook_history.c.amount,
-                set_debtbook_history.c.date_regist
+                sat_debtbook_history.c.action,
+                sat_debtbook_history.c.amount,
+                sat_debtbook_history.c.date_regist
             ).join_from(
                 link_debtor_debtbook,
                 hun_debtbook
-            ).join_from(hun_debtbook, set_debtbook_history).where(
+            ).join_from(hun_debtbook, sat_debtbook_history).where(
                 link_debtor_debtbook.c.debtor_sk==debtor_sk,
                 hun_debtbook.c.type_action==action
-                ).order_by(set_debtbook_history.c.date_regist)
+                ).order_by(sat_debtbook_history.c.date_regist)
 
             responce_db = await self.database.fetch_all(query=query)
 
