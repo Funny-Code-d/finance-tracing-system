@@ -40,10 +40,18 @@ tags_metadata = [
 
 app = FastAPI(
     title="Информационая система контроля личных расходов (API)",
-    version='0.0.3',
+    version='0.1.0',
     openapi_tags=tags_metadata
 )
 
+
+logger.add(
+        "logs/Report.log",
+        format='{time} | {level} | {message}',
+        level="DEBUG",
+        rotation="2 MB",
+        compression='zip'
+    )
 
 # app.include_router(users.route, prefix='/api/{token}/user', tags=['users'])
 # app.include_router(group.route, prefix='/api/{token}/group', tags=['group'])
@@ -59,18 +67,11 @@ async def index():
     with open("index.html", 'r') as file:
         return file.read()
 
+
 @app.on_event("startup")
 async def startup():
-    DecBase.metadata.create_all(Engine)
-    logger.add(
-        "logs/Report.log",
-        format='{time} | {level} | {message}',
-        level="DEBUG",
-        rotation="2 MB",
-        compression='zip'
-    )
+    await connect_db()
     logger.info("API successfully start")
-
 
 
 @app.on_event("shutdown")
@@ -78,5 +79,15 @@ async def shutdown():
     logger.info("API shutdown")
 
 
-if __name__ == "__main__":
+@logger.catch
+def run_project():
     uvicorn.run("main:app", port=8000, host='0.0.0.0', reload=False)
+
+
+@logger.catch
+async def connect_db():
+    DecBase.metadata.create_all(Engine)
+
+
+if __name__ == "__main__":
+    run_project()
