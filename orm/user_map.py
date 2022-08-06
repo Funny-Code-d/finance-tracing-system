@@ -4,7 +4,7 @@ from sqlalchemy import select
 from core.common_func import clear_dict
 from db.hubs import hub_token, hub_customer
 from db.links import link_token_customer
-from db.settelites import sat_customer
+from db.sattelites import sat_customer
 from core.security import hash_passwd, verify_hash_passwd
 
 from models.user import User, UserList, UserPatch, UserRegistartion

@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from .base import BaseEntity
 from db.hubs import hub_purchase
-from db.settelites import sat_purchase, sat_purchase_detail
+from db.sattelites import sat_purchase, sat_purchase_detail
 from db.links import link_purcahse_group, link_purchase_category
 from models.purchase import PurchaseIn, Purchase
 from sqlalchemy import select

@@ -1,11 +1,9 @@
-
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 import uvicorn
-from db.base import database
-from endpoints import users, group, purchase, category, templates, todolist, debtbook
-
-
+# from endpoints import users, group, purchase, category, templates, todolist, debtbook
+from db.create_db import DecBase, Engine
+from loguru import logger
 
 
 tags_metadata = [
@@ -47,15 +45,14 @@ app = FastAPI(
 )
 
 
+# app.include_router(users.route, prefix='/api/{token}/user', tags=['users'])
+# app.include_router(group.route, prefix='/api/{token}/group', tags=['group'])
+# app.include_router(purchase.route, prefix="/api/{token}/purchase", tags=['purchase'])
+# app.include_router(category.route, prefix="/api/{token}/group/category", tags=["category"])
+# app.include_router(templates.route, prefix="/api/{token}/group/templates", tags=["templates"])
+# app.include_router(todolist.route, prefix="/api/{token}/group/todo", tags=["todolist"])
+# app.include_router(debtbook.route, prefix="/api/{token}/debtbook", tags=["debtbook"])
 
-
-app.include_router(users.route, prefix='/api/{token}/user', tags=['users'])
-app.include_router(group.route, prefix='/api/{token}/group', tags=['group'])
-app.include_router(purchase.route, prefix="/api/{token}/purchase", tags=['purchase'])
-app.include_router(category.route, prefix="/api/{token}/group/category", tags=["category"])
-app.include_router(templates.route, prefix="/api/{token}/group/templates", tags=["templates"])
-app.include_router(todolist.route, prefix="/api/{token}/group/todo", tags=["todolist"])
-app.include_router(debtbook.route, prefix="/api/{token}/debtbook", tags=["debtbook"])
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
@@ -64,12 +61,21 @@ async def index():
 
 @app.on_event("startup")
 async def startup():
-    await database.connect()
+    DecBase.metadata.create_all(Engine)
+    logger.add(
+        "logs/Report.log",
+        format='{time} | {level} | {message}',
+        level="DEBUG",
+        rotation="2 MB",
+        compression='zip'
+    )
+    logger.info("API successfully start")
+
 
 
 @app.on_event("shutdown")
 async def shutdown():
-    await database.disconnect()
+    logger.info("API shutdown")
 
 
 if __name__ == "__main__":

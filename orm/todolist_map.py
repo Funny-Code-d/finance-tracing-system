@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from .base import BaseEntity
 from db.hubs import hub_todo_list
-from db.settelites import sat_item_todo_list
+from db.sattelites import sat_item_todo_list
 from db.links import link_group_todo_list, link_templates_category
 from models.purchase import PurchaseIn, Purchase
 from models.todolist import ToDoListIn, GetToDoList, GetToDoListById, ToDoListItemIn, DeleteToDoList, DeleteItemToDoList

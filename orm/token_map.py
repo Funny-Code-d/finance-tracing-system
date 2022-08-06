@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from .base import BaseEntity
 from db.hubs import hub_token
-from db.settelites import sat_token
+from db.sattelites import sat_token
 from models.token import Token, TokenHash, TokenInfo
 from sqlalchemy import select
 from pydantic.error_wrappers import ValidationError

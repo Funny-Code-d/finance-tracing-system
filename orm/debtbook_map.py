@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from .base import BaseEntity
 from db.hubs import hub_debtor, hun_debtbook
-from db.settelites import sat_debtbook_history
+from db.sattelites import sat_debtbook_history
 from db.links import link_debtor_debtbook, link_customer_debtor
 from models.purchase import PurchaseIn, Purchase
 from models.debtbook import DebtbookIn, DebtbookRecord, GetDebtbookRecord, PostTransaction, DebtorIn

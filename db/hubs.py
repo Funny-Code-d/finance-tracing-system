@@ -1,78 +1,74 @@
-import datetime
-from sqlalchemy.schema import Sequence
-from sqlalchemy import CheckConstraint, ForeignKey, Column
-from sqlalchemy import String, Integer, Text, Boolean, Float, DateTime
-import sqlalchemy
-from .base import metadata
+from sqlalchemy import Column
+from sqlalchemy import String, Integer, Text, Boolean, Float, DateTime, TIMESTAMP
+from .base import DecBase
+from datetime import datetime
 
 
-hub_token = sqlalchemy.Table(
-    "hub_token",
-    metadata,
-    Column("token_sk", Integer, primary_key=True, autoincrement=True),
-    Column("access_token", Text, unique=True, nullable=False),
-    Column("refresh_token", Text, unique=True, nullable=False)
-)
+class h_token(DecBase):
+    __tablename__ = 'h_token'
+    token_sk = Column(Integer, primary_key=True, autoincrement=True)
+    access_token = Column(Text, unique=True, nullable=False)
+    refresh_token = Column(Text, unique=True, nullable=False)
+    load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
 
-hub_customer = sqlalchemy.Table(
-    "hub_customer",
-    metadata,
-    Column("customer_sk", Integer, primary_key=True, autoincrement=True),
-    Column("email", String(30), unique=True, nullable=True),
-    Column("telegram_id", Integer, unique=True, nullable=True),
-    Column("password", Text, nullable=True)
-)
 
-hub_group = sqlalchemy.Table(
-    "hub_group",
-    metadata,
-    #Column("group_sk", Integer, primary_key=True, autoincrement=True),
-    Column("group_sk", String(100), primary_key=True),
-    Column("access", String(10), nullable=False),
-)
+class h_customer(DecBase):
+    __tablename__ = 'h_customer'
+    customer_sk = Column(Integer, unique=True, autoincrement=True)
+    email = Column(String, unique=True, primary_key=True)
+    telegram_id = Column(Integer, unique=True, nullable=True)
+    password = Column(Text, nullable=True)
+    load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
 
-hub_todo_list = sqlalchemy.Table(
-    "hub_todo_list",
-    metadata,
-    Column("todo_list_sk", Integer, primary_key=True, autoincrement=True),
-    Column("name_todo_list", String(50), nullable=False),
-    Column("is_active", Boolean, nullable=False)
-)
 
-hub_category = sqlalchemy.Table(
-    "hub_category",
-    metadata,
-    Column("category_sk", Integer, primary_key=True, autoincrement=True),
-    Column("name_category", String(30), nullable=False)
-)
+class h_group(DecBase):
+    __tablename__ = 'h_group'
+    group_sk = Column(String, primary_key=True)
+    access = Column(String, nullable=False)
+    load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
 
-hub_templates = sqlalchemy.Table(
-    "hub_templates",
-    metadata,
-    Column("template_sk", Integer, primary_key=True, autoincrement=True),
-    Column("name_template", String(30), nullable=False),
-    Column("number_days", Integer, nullable=False)
-)
 
-hub_purchase = sqlalchemy.Table(
-    "hub_purchase",
-    metadata,
-    Column("purchase_sk", Integer, primary_key=True, autoincrement=True),
-    Column("name_store", String(50), nullable=True),
-    Column("date_purchase", DateTime, nullable=False, default=datetime.datetime.utcnow)
-)
+class h_todo_list(DecBase):
+    __tablename__ = 'h_todo_list'
+    todo_list_sk = Column(Integer, primary_key=True, autoincrement=True)
+    name_todo_list = Column(String, nullable=False)
+    is_active = Column(Boolean, nullable=False)
+    load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
 
-hub_debtor = sqlalchemy.Table(
-    "hub_debtor",
-    metadata,
-    Column("debtor_sk", Integer, primary_key=True, autoincrement=True),
-    Column("debtor_name", String(50), nullable=False),
-)
 
-hun_debtbook = sqlalchemy.Table(
-    "hub_debtbook",
-    metadata,
-    Column("debtbook_sk", Integer, primary_key=True, autoincrement=True),
-    Column("type_action", String(10), nullable=False),
-    Column("total_amount", Float, nullable=False)
-)
+class h_category(DecBase):
+    __tablename__ = 'h_category'
+    category_sk = Column(Integer, primary_key=True, autoincrement=True)
+    name_category = Column(String, nullable=False)
+    load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
+
+
+class h_templates(DecBase):
+    __tablename__ = 'h_templates'
+    template_sk = Column(Integer, primary_key=True, autoincrement=True)
+    name_template = Column(String, nullable=False)
+    number_days = Column(Integer, nullable=False)
+    load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
+
+
+class h_purchase(DecBase):
+    __tablename__ = 'h_purchase'
+    purchase_sk = Column(Integer, primary_key=True, autoincrement=True)
+    name_store = Column(String, nullable=True)
+    date_purchase = Column(DateTime, nullable=False, default=datetime.utcnow)
+    load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
+
+
+class h_debtor(DecBase):
+    __tablename__ = 'h_debtor'
+    debtor_sk = Column(Integer, primary_key=True, autoincrement=True)
+    debtor_name = Column(String, nullable=False)
+    load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
+
+
+class h_debtbook(DecBase):
+    __tablename__ = 'h_debtbook'
+    debtbook_sk = Column(Integer, primary_key=True, autoincrement=True)
+    type_action = Column(String, nullable=False)
+    total_amount = Column(Float, nullable=False)
+    load_dttm = Column(TIMESTAMP, default=datetime.utcnow)

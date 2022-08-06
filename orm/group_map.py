@@ -4,7 +4,7 @@ from .base import BaseEntity
 from models.group import PostGroupModel, GetGroupModelRequest, GetAllGroupModelRequest, GroupModel
 from models.group import GetGroupModelResponce, GetAllGroupModelResponce, PatchGroupModel
 from db.hubs import hub_group, hub_customer
-from db.settelites import sat_group
+from db.sattelites import sat_group
 from db.links import link_admin_group, link_token_customer
 from pydantic.error_wrappers import ValidationError
 from core.common_func import clear_dict
