@@ -3,7 +3,7 @@ from typing import Optional, List
 
 
 class User(BaseModel):
-    customer_sk: Optional[int]
+    id: Optional[int]
     first_name: str
     last_name: str
     email: EmailStr
@@ -12,7 +12,7 @@ class User(BaseModel):
     class Config:
         schema_extra = {
             "example" : {
-                "customer_sk" : 1,
+                "id" : 1,
                 "first_name" : "Example first name",
                 "last_name" : "Example last name",
                 "email" : "example@example.com",

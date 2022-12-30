@@ -1,7 +1,9 @@
-from databases import Database
+from sqlalchemy.orm.session import sessionmaker
+
+from db.base import Engine
 
 
-class BaseRepository():
+class BaseRepository:
     
-    def __init__(self, db_orm: Database):
-        self.db_orm = db_orm
+    def __init__(self):
+        self.session = sessionmaker(bind=Engine)()

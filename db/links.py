@@ -13,7 +13,7 @@ class l_token_customer(DecBase):
     )
     customer_sk = Column(
         Integer,
-        ForeignKey("h_token.token_sk", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("h_customer.customer_sk", ondelete="CASCADE", onupdate="CASCADE"),
         primary_key=True
     )
     load_dttm = Column(TIMESTAMP, default=datetime.utcnow)

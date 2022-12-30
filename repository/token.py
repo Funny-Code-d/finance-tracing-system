@@ -1,105 +1,91 @@
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException, status, Depends, Response
+from typing import Union
+
 from models.token import TokenIn, Token, TokenOut, TokenAuthIn, TokenHash, TokenDelete
-from core.security import create_hash_token, verify_hash_token
-from orm.token_map import TokenEntity
+from core.security import create_hash_token, verify_hash_token, hash_passwd
 import datetime
-from typing import List
+from .base import BaseRepository
+from db.hubs import h_token
+from db.links import l_token_customer
+from db.sattelites import s_token
+# from modules.tokens import tokens_decorator
 
 
-class TokenRepository():
+class TokenRepository(BaseRepository):
 
-    def __init__(self, orm_obj):
-        self.db_orm: TokenEntity = orm_obj
-    
+    async def create_token(self, token_model: TokenIn) -> Union[TokenOut, bool]:
 
-    async def create_token(self, token: TokenIn) -> TokenOut:
-        
-        access_token = create_hash_token(token.owner + token.email_owner)
-        refresh_token = create_hash_token(token.owner + token.email_owner + token.password)
+        break_flag = True
 
-        t = Token(
-            access_token=access_token,
-            refresh_token=create_hash_token(refresh_token),
-            owner=token.owner,
-            email_owner=token.email_owner,
-            date_create=datetime.datetime.now(),
-        )
+        while break_flag:
 
-        token_sk = await self.db_orm.add(token=t)
-        
-        return TokenOut(
-            token_sk=token_sk,
-            access_token=access_token,
-            refresh_token=refresh_token
-        )
+            access_token = create_hash_token(token_model.owner + token_model.email_owner)
+            refresh_token = create_hash_token(token_model.owner + token_model.email_owner + token_model.password)
 
+            is_already = self.session.query(h_token).filter(h_token.access_token == access_token).first()
 
-    async def refresh_token(self, token: TokenAuthIn) -> TokenHash:
+            if not is_already:
+                break_flag = False
+
+                date_now = datetime.datetime.now()
+                hub = h_token(
+                    access_token=access_token,
+                    refresh_token=hash_passwd(refresh_token),
+                    load_dttm=date_now
+                )
+                self.session.add(hub)
+                self.session.commit()
+
+                sat = s_token(
+                    token_sk=hub.token_sk,
+                    name_owner=token_model.owner,
+                    email_owner=token_model.email_owner,
+                    load_dttm=date_now
+                )
+                self.session.add(sat)
+                self.session.commit()
+
+                if hub.token_sk:
+                    return TokenOut(
+                        token_sk=hub.token_sk,
+                        access_token=access_token,
+                        refresh_token=refresh_token
+                    )
+                else:
+                    return False
+            else:
+                continue
+
+    async def refresh_token(self, token_model: TokenAuthIn) -> Union[dict, Response]:
         """Создание нового jwt"""
-        
-        token_sk = await self.verify_refresh_token(token.access_token, token.refresh_token)
+        token_element = self.session.query(h_token).filter(h_token.access_token == token_model.access_token).first()
+        if token_element:
+            verify = verify_hash_token(token_model.refresh_token, token_element.refresh_token)
+            if verify:
+                new_token = create_hash_token(token_model.access_token)
+                token_element.access_token = new_token
+                self.session.commit()
+                return {"new_access_token":  new_token}
+            else:
+                return Response(status_code=status.HTTP_404_NOT_FOUND)
 
-        if token_sk is not None:
-            new_access_token = create_hash_token(token.access_token)
-            
-            new_token = TokenHash(
-                token_sk=token_sk,
-                access_token=new_access_token
-            )
-            
-            await self.db_orm.update_access_token(new_token)
-            return new_token
-        else:
-            return False
-            
-            
-        
-
-    async def verify_refresh_token(self, access_token: str, refresh_token: str) -> int:
-        """Проверка подлиности refresh токена"""
-        token_sk = await self.db_orm.get_token_id(access_token)
-        try:
-            tokens = TokenHash.parse_obj(await self.db_orm.get_token(token_sk=token_sk))
-            hash_refresh_token = tokens.refresh_token
-        except ValueError:
-            return None
-        
-        if verify_hash_token(refresh_token, hash_refresh_token):
-            return token_sk
-        else:
-            return None
-        
-    async def verify_refresh_token_by_id(self, token_sk: str, refresh_token: str) -> int:
-        """Проверка подлиности refresh токена"""
-        try:
-            tokens = TokenHash.parse_obj(await self.db_orm.get_token(token_sk=token_sk))
-            hash_refresh_token = tokens.refresh_token
-        except ValueError:
-            return None
-        
-        if verify_hash_token(refresh_token, hash_refresh_token):
-            return True
-        else:
-            return False
-
-        
-    async def verify_access_token(self, access_token) -> int:
-        """Проверка подлиности access токена (без хеширования)"""
-        token_sk = await self.db_orm.get_token_id(access_token)
-
-        if token_sk is not None:
-            return token_sk
-        else:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="access token did not pass the auth")
-
-
-    async def delete_token(self, token: TokenDelete):
+    async def delete_token(self, token_model: TokenDelete):
         """Удаление токена"""
-        token_sk = await self.verify_refresh_token(token.access_token, token.refresh_token)
-        if token_sk:
-            await self.db_orm.delete(token_sk)
-        return True
-    
-    
-    def calculating_duration_token(self):
-        return datetime.datetime.now() + datetime.timedelta(days=365)
+        token_element = self.session.query(h_token).filter(
+            h_token.access_token == token_model.access_token
+        ).first()
+
+        if token_element:
+            print(token_element)
+            link_token = self.session.query(l_token_customer).filter(
+                l_token_customer.token_sk == token_element.token_sk
+            ).all()
+            print(link_token)
+            if len(link_token) > 0:
+                for item in link_token:
+                    self.session.delete(item)
+            self.session.delete(h_token)
+            self.session.commit()
+            return Response(status_code=status.HTTP_200_OK)
+        else:
+            return Response(status_code=status.HTTP_404_NOT_FOUND)

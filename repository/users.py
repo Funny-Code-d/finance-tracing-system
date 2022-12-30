@@ -1,75 +1,162 @@
-from fastapi import HTTPException, status
-from sqlalchemy import select
+import datetime
+from fastapi import status, Response
+from typing import Union
+
 from .base import BaseRepository
-from orm.user_map import UserEntity
-from typing import List
 from models.user import User, UserIn, UserPatch, UserRegistartion, HubCustomerModel, SetCustomerModel, LinkTokenCustomer, UserAuth, DeleteUser
-from core import security
-from pydantic.error_wrappers import ValidationError
+from modules.tokens import access_control
+from db.hubs import h_customer, h_token
+from db.links import l_token_customer
+from db.sattelites import s_customer
 
 
-class UserRepository():
+class UserRepository(BaseRepository):
 
-    def __init__(self, orm_obj):
-        self.db_orm: UserEntity = orm_obj
-    
-    async def get_all(self, token_id):
-        return await self.db_orm.get_all(token_id)
-    
-    async def auth(self, user_data: UserAuth) -> bool:
-        return await self.db_orm.auth(user_data)
+    @access_control
+    async def get_all(self, token: str):
+        pass
 
+    @access_control
+    async def auth(self, user_data: UserAuth, token: str) -> bool:
+        pass
 
-    async def get_by_id(self, user_id: int, token_id: int) -> User:
+    @access_control
+    async def get_by_telegram(self, telegram_id: int, token: str):
+        """Получение пользователя по Telegram id"""
+        hub_user = self.session.query(h_customer).filter(h_customer.telegram_id == telegram_id).first()
+        hub_token = self.session.query(h_token).filter(h_token.access_token == token).first()
+
+        if not hub_user:
+            return Response(status_code=status.HTTP_404_NOT_FOUND)
+
+        valid_user = self.session.query(l_token_customer).filter(
+            l_token_customer.token_sk == hub_token.token_sk,
+            l_token_customer.customer_sk == hub_user.customer_sk
+        ).first()
+
+        if valid_user:
+            sat_user = self.session.query(s_customer).filter(
+                s_customer.customer_sk == hub_user.customer_sk
+            ).first()
+
+            return {
+                "id": hub_user.customer_sk,
+                "first_name": sat_user.first_name,
+                "last_name": sat_user.last_name,
+                "email": hub_user.email,
+                "telegram_id": hub_user.telegram_id
+            }
+        else:
+            return Response(status_code=status.HTTP_404_NOT_FOUND)
+
+    @access_control
+    async def get_by_id(self, user_id: int, token: str) -> Union[Response, dict]:
         """Получение пользователя по ID"""
+        hub_user = self.session.query(h_customer).filter(h_customer.customer_sk == user_id).first()
+        hub_token = self.session.query(h_token).filter(h_token.access_token == token).first()
 
-        user = await self.db_orm.get_by_id(user_id, token_id)
-        if user:
-            return user
+        if not hub_user:
+            return Response(status_code=status.HTTP_404_NOT_FOUND)
+
+        valid_user = self.session.query(l_token_customer).filter(
+            l_token_customer.token_sk == hub_token.token_sk,
+            l_token_customer.customer_sk == hub_user.customer_sk
+        ).first()
+
+        if valid_user:
+            sat_user = self.session.query(s_customer).filter(
+                s_customer.customer_sk == hub_user.customer_sk
+            ).first()
+
+            return {
+                "id": hub_user.customer_sk,
+                "first_name": sat_user.first_name,
+                "last_name": sat_user.last_name,
+                "email": hub_user.email,
+                "telegram_id": hub_user.telegram_id
+            }
         else:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="nothing found")
-        
-        
-    async def get_by_email(self, email: str, token_id: int) -> User:
+            return Response(status_code=status.HTTP_404_NOT_FOUND)
+
+    @access_control
+    async def get_by_email(self, email: str, token: str) -> Union[Response, dict]:
         """Получение пользователя по Email"""
-        
-        user = await self.db_orm.get_by_email(email, token_id)
-        if user:
-            return user
+        hub_user = self.session.query(h_customer).filter(h_customer.email == email).first()
+        hub_token = self.session.query(h_token).filter(h_token.access_token == token).first()
+
+        if not hub_user:
+            return Response(status_code=status.HTTP_404_NOT_FOUND)
+
+        valid_user = self.session.query(l_token_customer).filter(
+            l_token_customer.token_sk == hub_token.token_sk,
+            l_token_customer.customer_sk == hub_user.customer_sk
+        ).first()
+
+        if valid_user:
+            sat_user = self.session.query(s_customer).filter(
+                s_customer.customer_sk == hub_user.customer_sk
+            ).first()
+
+            return {
+                "id": hub_user.customer_sk,
+                "first_name": sat_user.first_name,
+                "last_name": sat_user.last_name,
+                "email": hub_user.email,
+                "telegram_id": hub_user.telegram_id
+            }
         else:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="nothing found")
-    
-    async def get_by_telegram_id(self, telegram_id: int, token_id: int) -> User:
-        """Получение пользовтеля по telegram_id"""
-        
-        user = await self.db_orm.get_by_telegram(telegram_id, token_id)
-        if user:
-            return user
-        else:
-            return False
-        
-    async def create_user(self, u: UserRegistartion, token_id: int) -> User:
-        """Создание пользователя"""        
+            return Response(status_code=status.HTTP_404_NOT_FOUND)
 
-        await self.db_orm.add(user=u, token_id=token_id)
-        return True
+    @access_control
+    async def create_user(self, u: UserRegistartion, token: str) -> Union[Response, dict]:
+        """Создание пользователя"""
+        is_already = self.session.query(h_customer).filter(h_customer.email == u.email).first()
 
-        
-    async def put_user(self, u: User, token_id: int) -> User:
+        # Такой пользователь уже существует
+        if is_already:
+            return Response(status_code=status.HTTP_409_CONFLICT)
+
+        hub_token = self.session.query(h_token).filter(h_token.access_token == token).first()
+        date_now = datetime.datetime.now()
+        hub_user = h_customer(
+            email=u.email,
+            telegram_id=u.telegram_id,
+            password=u.password,
+            load_dttm=date_now
+        )
+        self.session.add(hub_user)
+        self.session.commit()
+
+        sat_user = s_customer(
+            customer_sk=hub_user.customer_sk,
+            first_name=u.first_name,
+            last_name=u.last_name,
+            load_dttm=date_now
+        )
+        self.session.add(sat_user)
+
+        link_user = l_token_customer(
+            token_sk=hub_token.token_sk,
+            customer_sk=hub_user.customer_sk,
+            load_dttm=date_now
+        )
+        self.session.add(link_user)
+        self.session.commit()
+
+        return {
+            "id": hub_user.customer_sk
+        }
+
+    @access_control
+    async def put_user(self, u: User, token: str) -> User:
         """Изменение информации о пользователе"""
-        is_update = await self.db_orm.put(u)
-        return is_update
-    
-    async def patch_user(self, u: UserPatch, token_id: int) -> User:
-        """Изменение информации о пользователе"""
-        is_update = await self.db_orm.patch(u)
-        return is_update
-        
-    async def delete_user(self, u: DeleteUser) -> User:
-        is_valid_token = await self.db_orm.check_token_customer(u.token_sk, u.customer_sk)
-        if is_valid_token:
-            return await self.db_orm.delete_user(u)
-        
-    async def merge_user_defferent_platform(self, u: UserIn) -> User:
-        """Слияние учётных записей одного пользователя с разных платформ"""
+        pass
 
+    @access_control
+    async def patch_user(self, u: UserPatch, token: str) -> User:
+        """Изменение информации о пользователе"""
+        pass
+
+    @access_control
+    async def delete_user(self, u: DeleteUser, token: str) -> User:
+        pass

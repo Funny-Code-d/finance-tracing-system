@@ -1,6 +1,5 @@
 
 
-
 def clear_dict(target_dict: dict, value):
     result = dict()
     for key in target_dict.keys():

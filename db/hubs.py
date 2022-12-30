@@ -14,8 +14,8 @@ class h_token(DecBase):
 
 class h_customer(DecBase):
     __tablename__ = 'h_customer'
-    customer_sk = Column(Integer, unique=True, autoincrement=True)
-    email = Column(String, unique=True, primary_key=True)
+    customer_sk = Column(Integer, unique=True, autoincrement=True, primary_key=True)
+    email = Column(String, unique=True)
     telegram_id = Column(Integer, unique=True, nullable=True)
     password = Column(Text, nullable=True)
     load_dttm = Column(TIMESTAMP, default=datetime.utcnow)

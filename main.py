@@ -2,11 +2,17 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 import uvicorn
 # from endpoints import users, group, purchase, category, templates, todolist, debtbook
+from endpoints.token import route as token_route
+from endpoints.users import route as user_route
 from db.create_db import DecBase, Engine
 from loguru import logger
 
 
 tags_metadata = [
+    {
+        "name" : "token",
+        "description" : "В данном разделе реализован функционал работы с ресурсом токен."
+    },
     {
         "name" : "users",
         "description" : "В данном разделе реализован функционал работы с ресурсом пользователь."
@@ -39,7 +45,7 @@ tags_metadata = [
 
 
 app = FastAPI(
-    title="Информационая система контроля личных расходов (API)",
+    title="Информационная система контроля личных расходов (API)",
     version='0.1.0',
     openapi_tags=tags_metadata
 )
@@ -53,7 +59,8 @@ logger.add(
         compression='zip'
     )
 
-# app.include_router(users.route, prefix='/api/{token}/user', tags=['users'])
+app.include_router(token_route, prefix='/api/token', tags=['token'])
+app.include_router(user_route, prefix='/api/{token}/user', tags=['users'])
 # app.include_router(group.route, prefix='/api/{token}/group', tags=['group'])
 # app.include_router(purchase.route, prefix="/api/{token}/purchase", tags=['purchase'])
 # app.include_router(category.route, prefix="/api/{token}/group/category", tags=["category"])
@@ -81,7 +88,7 @@ async def shutdown():
 
 @logger.catch
 def run_project():
-    uvicorn.run("main:app", port=8000, host='0.0.0.0', reload=False)
+    uvicorn.run("main:app", port=8000, host='127.0.0.1', reload=True)
 
 
 @logger.catch
