@@ -20,10 +20,13 @@ class User(BaseModel):
 
             }
         }
+
+
 class UserList(BaseModel):
     token_sk: Optional[int]
     users: List[User]
-    
+
+
 class UserRegistartion(BaseModel):
     first_name: str
     last_name: str
@@ -31,17 +34,17 @@ class UserRegistartion(BaseModel):
     telegram_id: Optional[int]
     password: str
 
+
 class UserAuth(BaseModel):
-    token_sk: Optional[int]
     email: EmailStr
     passwd: str
 
 
-    
 class UserIn(BaseModel):
     user_id: Optional[int]
     email: Optional[EmailStr]
     telegram_id: Optional[int]
+
 
 class HubCustomerModel(BaseModel):
     customer_sk: Optional[int]
@@ -49,15 +52,18 @@ class HubCustomerModel(BaseModel):
     telegram_id: int
     password: str
 
+
 class SetCustomerModel(BaseModel):
     customer_sk: int
     first_name: str
     last_name: str
 
+
 class LinkTokenCustomer(BaseModel):
     token_sk: int
     customer_sk: int
-    
+
+
 class UserPatch(BaseModel):
     customer_sk: int
     first_name: Optional[str]
@@ -77,6 +83,6 @@ class UserPatch(BaseModel):
             }
         }
 
+
 class DeleteUser(BaseModel):
-    token_sk: Optional[int]
     customer_sk: int

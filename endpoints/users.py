@@ -71,7 +71,7 @@ async def auth_user(
         user: UserAuth,
         token: str,
         repository: UserRepository = Depends(get_user_repositories)):
-    return await repository.get_all(user, token=token)
+    return await repository.auth(user, token=token)
 
 
 @route.delete("/", status_code=204)
