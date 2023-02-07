@@ -26,8 +26,10 @@ class GetAllGroupModelResponce(BaseModel):
 
 # POST
 class PostGroupModel(GroupModel):
-    token_sk: Optional[int]
-    customer_sk: int
+    name_group: str
+    access: str
+    description: str
+    user_id: int
 
     class Config:
         schema_extra = {
@@ -35,7 +37,7 @@ class PostGroupModel(GroupModel):
                 "name_group" : "my group",
                 "access" : "private [or] public",
                 "description" : "Description my group",
-                "customer_sk" : 1,
+                "user_id" : 1,
             }
         }
 

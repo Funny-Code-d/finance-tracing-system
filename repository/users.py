@@ -245,8 +245,6 @@ class UserRepository(BaseRepository):
 
         return Response(status_code=status.HTTP_200_OK)
 
-
-
     @access_control
     async def delete_user(self, u: DeleteUser, token: str) -> Response:
         if not await self.check_link_token_user(token, u.customer_sk):

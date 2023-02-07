@@ -72,8 +72,8 @@ class l_pull_group(DecBase):
         primary_key=True
     )
     group_sk = Column(
-        Integer,
-        ForeignKey("h_customer.customer_sk", ondelete="CASCADE", onupdate="CASCADE"),
+        String,
+        ForeignKey("h_group.group_sk", ondelete="CASCADE", onupdate="CASCADE"),
         primary_key=True
     )
     load_dttm = Column(TIMESTAMP, default=datetime.utcnow)

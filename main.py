@@ -1,9 +1,12 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 import uvicorn
+
+
 # from endpoints import users, group, purchase, category, templates, todolist, debtbook
 from endpoints.token import route as token_route
 from endpoints.users import route as user_route
+from endpoints.group import route as group_route
 from db.create_db import DecBase, Engine
 from loguru import logger
 
@@ -61,7 +64,7 @@ logger.add(
 
 app.include_router(token_route, prefix='/api/token', tags=['token'])
 app.include_router(user_route, prefix='/api/{token}/user', tags=['users'])
-# app.include_router(group.route, prefix='/api/{token}/group', tags=['group'])
+app.include_router(group_route, prefix='/api/{token}/group', tags=['group'])
 # app.include_router(purchase.route, prefix="/api/{token}/purchase", tags=['purchase'])
 # app.include_router(category.route, prefix="/api/{token}/group/category", tags=["category"])
 # app.include_router(templates.route, prefix="/api/{token}/group/templates", tags=["templates"])
