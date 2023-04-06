@@ -1,6 +1,7 @@
 from fastapi import Response, status, HTTPException
 from sqlalchemy import text
 
+
 from modules.tokens import access_control
 from .base import BaseRepository
 from db.hubs import h_group, h_customer
@@ -80,11 +81,12 @@ class GroupRepository(BaseRepository):
             """
             with Engine.connect() as conn:
                 result_from_db = conn.execute(text(query))
+                print(result_from_db)
                 for item in result_from_db:
                     pull_list.append({
-                        "customer_sk": item['customer_sk'],
-                        "first_name": item['first_name'],
-                        "last_name": item['last_name']
+                        "customer_sk": item[0],
+                        "first_name": item[1],
+                        "last_name": item[2]
                     })
             if hub:
                 return {

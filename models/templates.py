@@ -12,7 +12,6 @@ class Templates(BaseModel):
     # categoties: List[TemplatesCategory]
 
 class TemplatesIn(Templates):
-    token_sk: Optional[int]
     customer_sk: int
     group_sk: str
     categories: List[int]
@@ -32,7 +31,6 @@ class GetTemplates(BaseModel):
     group_sk: str
 
 class DeleteTemplate(BaseModel):
-    token_sk: Optional[int]
     customer_sk: int
     group_sk: str
     template_sk: int

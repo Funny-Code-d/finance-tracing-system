@@ -19,26 +19,11 @@ class l_token_customer(DecBase):
     load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
 
 
-class l_customer_debtor(DecBase):
+class l_customer_debtbook(DecBase):
     __tablename__ = 'l_customer_debtor'
     customer_sk = Column(
         Integer,
         ForeignKey("h_customer.customer_sk", ondelete="CASCADE", onupdate="CASCADE"),
-        primary_key=True
-    )
-    debtor_sk = Column(
-        Integer,
-        ForeignKey("h_debtor.debtor_sk", ondelete="CASCADE", onupdate="CASCADE"),
-        primary_key=True
-    )
-    load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
-
-
-class l_debtor_debtbook(DecBase):
-    __tablename__ = 'l_debtor_debtbook'
-    debtor_sk = Column(
-        Integer,
-        ForeignKey("h_debtor.debtor_sk", ondelete="CASCADE", onupdate="CASCADE"),
         primary_key=True
     )
     debtbook_sk = Column(
@@ -47,6 +32,21 @@ class l_debtor_debtbook(DecBase):
         primary_key=True
     )
     load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
+
+
+# class l_debtor_debtbook(DecBase):
+#     __tablename__ = 'l_debtor_debtbook'
+#     debtor_sk = Column(
+#         Integer,
+#         ForeignKey("h_debtor.debtor_sk", ondelete="CASCADE", onupdate="CASCADE"),
+#         primary_key=True
+#     )
+#     debtbook_sk = Column(
+#         Integer,
+#         ForeignKey("h_debtbook.debtbook_sk", ondelete="CASCADE", onupdate="CASCADE"),
+#         primary_key=True
+#     )
+#     load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
 
 
 class l_admin_group(DecBase):

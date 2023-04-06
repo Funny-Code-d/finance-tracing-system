@@ -32,7 +32,7 @@ class UserRepository(BaseRepository):
     @access_control
     async def get_all(self, token: str):
         query = f"""
-            select t1.*, t4.* from  
+            select t4.customer_sk, t4.first_name, t4.last_name, t1.email, t1.telegram_id, t1.load_dttm from  
                 h_customer t1 join l_token_customer t2 on t1.customer_sk = t2.customer_sk
                 join h_token t3 on t2.token_sk = t3.token_sk
                 join s_customer t4 on t1.customer_sk = t4.customer_sk
@@ -42,14 +42,16 @@ class UserRepository(BaseRepository):
             data = conn.execute(text(query))
             result = list()
             for item in data:
+            # while data.fetchone():
+                # print(item.fetchone())
+                # item = data.fetchone()
                 item_list = {
-                    "user_id": item['customer_sk'],
-                    "first_name": item['first_name'],
-                    "last_name": item['last_name'],
-                    "email": item['email'],
-                    "password": item['password'],
-                    "telegram_id": item['telegram_id'],
-                    "load_dttm": item['load_dttm']
+                    "user_id": item[0],
+                    "first_name": item[1],
+                    "last_name": item[2],
+                    "email": item[3],
+                    "telegram_id": item[4],
+                    "load_dttm": item[5]
                 }
                 result.append(item_list)
             return {

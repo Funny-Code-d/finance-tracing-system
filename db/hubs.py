@@ -59,16 +59,15 @@ class h_purchase(DecBase):
     load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
 
 
-class h_debtor(DecBase):
-    __tablename__ = 'h_debtor'
-    debtor_sk = Column(Integer, primary_key=True, autoincrement=True)
-    debtor_name = Column(String, nullable=False)
-    load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
+# class h_debtor(DecBase):
+#     __tablename__ = 'h_debtor'
+#     debtor_sk = Column(Integer, primary_key=True, autoincrement=True)
+#     debtor_name = Column(String, nullable=False)
+#     load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
 
 
 class h_debtbook(DecBase):
     __tablename__ = 'h_debtbook'
     debtbook_sk = Column(Integer, primary_key=True, autoincrement=True)
-    type_action = Column(String, nullable=False)
-    total_amount = Column(Float, nullable=False)
+    debtor_name = Column(String, nullable=False)
     load_dttm = Column(TIMESTAMP, default=datetime.utcnow)

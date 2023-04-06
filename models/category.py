@@ -7,25 +7,18 @@ class Category(BaseModel):
     category_sk: int
     name_category: str
 
-class CategoryOut(BaseModel):
-    customer_sk: int
-    group_sk: str
-    categories: List[Category]
 
 class CategoryIn(BaseModel):
-    token_sk: Optional[int]
     customer_sk: int
     group_sk: str
     category_name: str
 
-class CategoryPost(BaseModel):
-    token_sk: Optional[int]
-    customer_sk: int
-    group_sk: str
-
-class CategoryItemPost(CategoryPost):
-    category_sk: int
 
 class PutCategory(CategoryIn):
     category_sk: int
 
+
+class DeleteCategory(BaseModel):
+    category_sk: int
+    customer_sk: int
+    group_sk: str

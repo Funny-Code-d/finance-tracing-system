@@ -40,16 +40,15 @@ class s_group(DecBase):
     load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
 
 
-class s_debtor(DecBase):
-    __tablename__ = 's_debtor'
-    debtor_sk = Column(
+class s_debtbook_status(DecBase):
+    __tablename__ = 's_debtbook_status'
+    debtbook_sk = Column(
         Integer,
-        ForeignKey("h_debtor.debtor_sk", ondelete="CASCADE", onupdate="CASCADE"),
+        ForeignKey("h_debtbook.debtbook_sk", ondelete="CASCADE", onupdate="CASCADE"),
         primary_key=True
     )
-    first_name = Column(String, nullable=True)
-    last_name = Column(String, nullable=True)
-    telegram_id = Column(String, nullable=True)
+    type_action = Column(String, nullable=False, primary_key=True)
+    total_amount = Column(Float, nullable=False)
     load_dttm = Column(TIMESTAMP, default=datetime.utcnow)
 
 

@@ -2,8 +2,8 @@ from repository.users import UserRepository
 from repository.token import TokenRepository
 from repository.group import GroupRepository
 # from repository.purchase import PurchaseRepository
-# from repository.category import CategoryRepository
-# from repository.templates import TemplatesRepositry
+from repository.category import CategoryRepository
+from repository.templates import TemplatesRepositry
 # from repository.todolist import TodoListRepositry
 # from repository.debtbook import DebtorRepository
 
@@ -18,6 +18,14 @@ def get_user_repositories() -> UserRepository:
 
 def get_group_repositories() -> GroupRepository:
     return GroupRepository()
+
+
+def get_category_repositories() -> CategoryRepository:
+    return CategoryRepository()
+
+
+def get_templates_repositories() -> TemplatesRepositry:
+    return TemplatesRepositry()
 # #-----
 #
 #
